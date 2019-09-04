@@ -3,12 +3,14 @@
  */
 package com.gitlab.incognitojam.ext2;
 
+import java.io.IOException;
+
 public class App {
-    public String getGreeting() {
-        return "Hello world.";
+    App() throws IOException {
+        Volume volume = new Volume("ext2fs");
     }
 
-    public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+    public static void main(String[] args) throws IOException {
+        new App();
     }
 }
