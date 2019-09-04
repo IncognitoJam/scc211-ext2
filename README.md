@@ -2,5 +2,10 @@
 ## `java-ext2` coursework
 
 # Getting started
-1. Execute the `./extract` script to unzip the filesystem.
-2. TODO
+```sh
+# Unzip the filesystem
+unzip ext2fs.zip
+
+# Run the application
+./gradlew run
+```
