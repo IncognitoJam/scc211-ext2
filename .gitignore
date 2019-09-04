@@ -6,3 +6,21 @@ ext2fs
 
 # Ignore Gradle build output directory
 build
+
+# Ignore IDE configuration
+.vscode
+.atom
+.idea
+*.iml
+
+# Ignore system files
+*.DS_Store
+Icon
+._*
+Thumbs.db
+
+# Ignore misc
+*.log
+*.class
+*.jar
+hs_err_pid*
