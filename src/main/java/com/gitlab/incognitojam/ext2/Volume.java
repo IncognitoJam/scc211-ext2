@@ -3,71 +3,60 @@ package com.gitlab.incognitojam.ext2;
 import java.io.*;
 import java.nio.ByteBuffer;
 
-public class Volume {
-    /**
-     * Filesystem block size in bytes.
-     *
-     * Defined in coursework spec.
-     */
-    private static final int fsBlockSize = 1024;
+public class Volume implements Closeable {
+    private final RandomAccessFile fsFile;
+    private final String label;
+    private final int blocksCount;
+    private final int fsBlockSize;
 
-    private final File fsImage;
+    public Volume(String filepath) throws IOException {
+        // Read superblock from file
+        fsFile = new RandomAccessFile(filepath, "r");
 
-    private String label;
-    private int blocks;
-    private int capacity;
+        // skip the boot sector
+        fsFile.skipBytes(1024);
 
-    public Volume(String fsImagePath) throws IOException {
-        this.fsImage = new File(fsImagePath);
-        this.initialise();
+        // read the superblock from disk
+        byte[] superblockBytes = readBytes(fsFile, 1024);
+        Superblock superblock = new Superblock(ByteBuffer.wrap(superblockBytes));
+
+        // retrieve superblock values
+        label = superblock.getVolumeLabel();
+        blocksCount = superblock.getBlocksCount();
+        fsBlockSize = superblock.getFsBlockSize();
     }
 
-    private void initialise() throws IOException {
-        // Read superblock from file
-        RandomAccessFile file = new RandomAccessFile(this.fsImage, "r");
-        file.skipBytes(1024);
-
-        byte[] superblock = new byte[1024];
-        file.read(superblock);
-        file.close();
-
-        // Read properties from superblock
-        ByteBuffer buffer = ByteBuffer.wrap(superblock);
-
-        int inodes = buffer.getInt(0);
-        blocks = buffer.getInt(4);
-        int groupBlocks = buffer.getInt(32);
-        int groupInodes = buffer.getInt(40);
-        short magic = buffer.getShort(56);
-        int inodeSize = buffer.getInt(88);
-
-        buffer.position(120);
-        byte[] labelBytes = new byte[16];
-        buffer.get(labelBytes, 0, 16);
-        label = new String(labelBytes);
-
-        capacity = blocks * fsBlockSize;
-
-        System.out.printf("Magic: 0x%04X\n", magic);
-        System.out.println("Label: " + label);
-        System.out.println("Blocks: " + blocks);
-        System.out.println("Block size: " + ByteUtils.formatHumanReadable(fsBlockSize));
-        System.out.println("Capacity: " + ByteUtils.formatHumanReadable(capacity));
+    @Override
+    public void close() throws IOException {
+        fsFile.close();
     }
 
     public String getLabel() {
         return label;
     }
 
+    public int getBlocks() {
+        return blocksCount;
+    }
+
     public int getBlockSize() {
         return fsBlockSize;
     }
 
-    public int getBlocks() {
-        return blocks;
+    public int getCapacity() {
+        return blocksCount * fsBlockSize;
     }
 
-    public int getCapacity() {
-        return capacity;
+    public void printDebugInfo() {
+        System.out.println("Label: " + label);
+        System.out.println("Blocks: " + blocksCount);
+        System.out.println("Block size: " + ByteUtils.formatHumanReadable(fsBlockSize));
+        System.out.println("Capacity: " + ByteUtils.formatHumanReadable(blocksCount * fsBlockSize));
+    }
+
+    private static byte[] readBytes(DataInput input, int size) throws IOException {
+        byte[] bytes = new byte[size];
+        input.readFully(bytes, 0, size);
+        return bytes;
     }
 }

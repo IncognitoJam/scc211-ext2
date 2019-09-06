@@ -6,11 +6,15 @@ package com.gitlab.incognitojam.ext2;
 import java.io.IOException;
 
 public class App {
-    App() throws IOException {
-        Volume volume = new Volume("ext2fs");
+    private App() {
+        try (Volume volume = new Volume("ext2fs")) {
+            volume.printDebugInfo();
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         new App();
     }
 }
