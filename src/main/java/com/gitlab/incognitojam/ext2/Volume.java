@@ -5,9 +5,7 @@ import java.nio.ByteBuffer;
 
 public class Volume implements Closeable {
     private final RandomAccessFile fsFile;
-    private final String label;
-    private final int blocksCount;
-    private final int fsBlockSize;
+    private final Superblock superblock;
 
     public Volume(String filepath) throws IOException {
         // Read superblock from file
@@ -18,12 +16,7 @@ public class Volume implements Closeable {
 
         // read the superblock from disk
         byte[] superblockBytes = readBytes(fsFile, 1024);
-        Superblock superblock = new Superblock(ByteBuffer.wrap(superblockBytes));
-
-        // retrieve superblock values
-        label = superblock.getVolumeLabel();
-        blocksCount = superblock.getBlocksCount();
-        fsBlockSize = superblock.getFsBlockSize();
+        superblock = new Superblock(ByteBuffer.wrap(superblockBytes));
     }
 
     @Override
@@ -32,26 +25,26 @@ public class Volume implements Closeable {
     }
 
     public String getLabel() {
-        return label;
+        return superblock.getVolumeLabel();
     }
 
     public int getBlocks() {
-        return blocksCount;
+        return superblock.getBlocksCount();
     }
 
     public int getBlockSize() {
-        return fsBlockSize;
+        return superblock.getFsBlockSize();
     }
 
     public int getCapacity() {
-        return blocksCount * fsBlockSize;
+        return getBlocks() * getBlockSize();
     }
 
     public void printDebugInfo() {
-        System.out.println("Label: " + label);
-        System.out.println("Blocks: " + blocksCount);
-        System.out.println("Block size: " + ByteUtils.formatHumanReadable(fsBlockSize));
-        System.out.println("Capacity: " + ByteUtils.formatHumanReadable(blocksCount * fsBlockSize));
+        System.out.println("Label: " + getLabel());
+        System.out.println("Blocks: " + getBlocks());
+        System.out.println("Block size: " + ByteUtils.formatHumanReadable(getBlockSize()));
+        System.out.println("Capacity: " + ByteUtils.formatHumanReadable(getCapacity()));
     }
 
     private static byte[] readBytes(DataInput input, int size) throws IOException {
