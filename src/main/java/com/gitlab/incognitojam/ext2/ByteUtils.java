@@ -6,14 +6,15 @@ package com.gitlab.incognitojam.ext2;
 public class ByteUtils {
     /**
      * Format an number of bytes with the matching suffix.
-     *
+     * <p>
      * For example, see how 1_000_000L is formatted:
-     * ```
+     * <p><blockquote><pre>
      * long bytes = 1_000_000L;
      * String bytesLabel = ByteUtils.formatHumanReadable(bytes);
      *
      * bytesLabel.equals("976.6 KiB"); // true
-     * ```
+     * </pre></blockquote></p>
+     * <p>
      *
      * @param bytes the value of bytes to format
      * @return returns formatted string with correct suffix
