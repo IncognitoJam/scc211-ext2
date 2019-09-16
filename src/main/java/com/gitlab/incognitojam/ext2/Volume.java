@@ -18,6 +18,9 @@ public class Volume implements Closeable {
         byte[] superblockBytes = new byte[1024];
         fsFile.readFully(superblockBytes, 0, 1024);
 
+        System.out.println("Superblock:");
+        ByteUtils.dumpHexBytes(superblockBytes, true);
+
         // Create a Superblock object from these bytes
         superblock = new Superblock(ByteBuffer.wrap(superblockBytes));
     }
@@ -79,9 +82,10 @@ public class Volume implements Closeable {
     }
 
     public void printDebugInfo() {
-        System.out.println("Label: " + getLabel());
-        System.out.println("Blocks: " + getBlocks());
-        System.out.println("Block size: " + ByteUtils.formatHumanReadable(getBlockSize()));
-        System.out.println("Capacity: " + ByteUtils.formatHumanReadable(getCapacity()));
+        System.out.println("Volume debug information:");
+        System.out.println("  label:      " + getLabel());
+        System.out.println("  blocks:     " + getBlocks());
+        System.out.println("  block size: " + ByteUtils.formatHumanReadable(getBlockSize()));
+        System.out.println("  capacity:   " + ByteUtils.formatHumanReadable(getCapacity()));
     }
 }

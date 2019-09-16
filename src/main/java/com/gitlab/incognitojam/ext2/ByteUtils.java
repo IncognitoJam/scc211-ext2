@@ -1,5 +1,7 @@
 package com.gitlab.incognitojam.ext2;
 
+import java.util.Arrays;
+
 /**
  * Utility methods relating to bytes.
  */
@@ -44,5 +46,84 @@ public class ByteUtils {
 
         // Round the value to 1 DP and format it!
         return String.format("%.1f %s", value, suffix);
+    }
+
+    /**
+     * Present an array of bytes in a hexadecimal view, similar to the output
+     * of the hexdump command on Unix systems. The formatted data will be
+     * written to the console.
+     *
+     * TODO: optionally, condense duplicate lines
+     *
+     * @param bytes       the byte array to format
+     * @param showAddress whether or not to show the address line numbers in
+     *                    the output
+     */
+    public static void dumpHexBytes(byte[] bytes, boolean showAddress) {
+        StringBuilder builder = new StringBuilder();
+
+        /*
+         * The position in the array to read the next line from, incremented
+         * by two bytes with each pass.
+         */
+        int address = 0;
+        while (address < bytes.length) {
+            /*
+             * Read the current line from the byte array. We print two bytes at
+             * a time.
+             */
+            final byte[] line = Arrays.copyOfRange(bytes, address, address + 16);
+
+            /*
+             * As we iterate over the bytes in this line, we need to build
+             * strings for both their hexadecimal and ascii representations.
+             *
+             * We use StringBuilder to efficiently construct the strings.
+             */
+            StringBuilder hex = new StringBuilder();
+            StringBuilder ascii = new StringBuilder();
+
+            // Iterate over each byte in the line.
+            for (final byte b : line) {
+                // Format it in hex, appending it to the hex builder.
+                hex.append(String.format("%02x", b));
+                hex.append(' ');
+
+                // Calculate the ASCII representation.
+                if (b < 32 || b == 127)
+                    /*
+                     * The value 127 and all values less than 32 aren't printable
+                     * in ascii, so we use a period instead.
+                     */
+                    ascii.append('.');
+                else
+                    /*
+                     * Simply casting the byte to a char will print the ASCII
+                     * representation in Java.
+                     */
+                    ascii.append((char) b);
+            }
+
+            /*
+             * Append the hex and ascii strings to the main string builder.
+             *
+             * Optionally insert the "line number" if the showAddress argument
+             * is truthy.
+             */
+            if (showAddress) {
+                builder.append(String.format("%07x", address));
+                builder.append(": ");
+            }
+            builder.append(hex);
+            builder.append(' ');
+            builder.append(ascii);
+            builder.append('\n');
+
+            // Finally, increment the position by two bytes.
+            address += 16;
+        }
+
+        // Print the resulting string to the console.
+        System.out.println(builder);
     }
 }
