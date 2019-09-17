@@ -6,10 +6,12 @@ import java.nio.ByteBuffer;
 public class Volume implements Closeable {
     private final RandomAccessFile fsFile;
     private Superblock superblock;
+    private BlockGroupDescriptor[] blockGroupDescriptors;
 
     public Volume(String filepath) throws IOException {
         this.fsFile = new RandomAccessFile(filepath, "r");
         setupSuperblock();
+        setupBlockGroupDescriptorTable();
     }
 
     private void setupSuperblock() throws IOException {
@@ -22,6 +24,26 @@ public class Volume implements Closeable {
 
         // Create a Superblock object from these bytes.
         superblock = new Superblock(ByteBuffer.wrap(superblockBytes));
+    }
+
+    private void setupBlockGroupDescriptorTable() {
+        // Read the BGD table from disk.
+        // FIXME: the index might be different for other block sizes
+        ByteBuffer buffer = readBlock(2);
+
+        // number of groups = number of blocks / number of blocks per group
+        final int blockGroupCount =
+                (int) Math.ceil((double) superblock.getBlocksCount() / (double) superblock.getBlocksInGroup());
+
+        // Construct the BGDs.
+        blockGroupDescriptors = new BlockGroupDescriptor[blockGroupCount];
+        for (int i = 0; i < blockGroupCount; i++)
+            /*
+             * We pass the buffer to the BGD constructor as-is, since each BGD
+             * immediately follows the previous, so the buffer pointer will
+             * already be in the correct position.
+             */
+            blockGroupDescriptors[i] = new BlockGroupDescriptor(buffer);
     }
 
     /**
@@ -44,7 +66,7 @@ public class Volume implements Closeable {
             throw new IndexOutOfBoundsException("block index must be in range [0, Volume#getBlocks())");
 
         // Location of the block from the start of the disk
-        final int offset = 1024 + index * superblock.getFsBlockSize();
+        final int offset = index * superblock.getFsBlockSize();
 
         // Create backing array for bytes, size determined from block size
         byte[] bytes = new byte[superblock.getFsBlockSize()];
