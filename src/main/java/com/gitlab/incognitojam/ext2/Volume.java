@@ -58,27 +58,41 @@ public class Volume implements Closeable {
      * @param index the block index
      * @return Returns a ByteBuffer backed by an array of bytes read from the
      * disk.
-     * @throws IndexOutOfBoundsException throws if index is not in range
-     *                                   [0, {@link Volume#getBlocks})
      */
-    private ByteBuffer readBlock(int index) throws IndexOutOfBoundsException {
-        if (index < 0 || index >= superblock.getBlocksCount())
-            throw new IndexOutOfBoundsException("block index must be in range [0, Volume#getBlocks())");
-
-        // Location of the block from the start of the disk
+    private ByteBuffer readBlock(int index) {
+        // Location of the block from the start of the disk.
         final int offset = index * superblock.getFsBlockSize();
 
-        // Create backing array for bytes, size determined from block size
-        byte[] bytes = new byte[superblock.getFsBlockSize()];
+        // Read the bytes from disk.
+        final byte[] bytes = readRange(offset, superblock.getFsBlockSize());
+
+        return ByteBuffer.wrap(bytes);
+    }
+
+    /**
+     * Read an array of bytes from disk given an offset and a length.
+     *
+     * @param offset the offset from the beginning of the disk to read from
+     * @param length the number of bytes to read
+     * @return Returns a byte array containing the bytes read from the disk.
+     */
+    private byte[] readRange(int offset, int length) {
+        /*
+         * Create a backing array for the data, size determined from the given
+         * length argument.
+         */
+        byte[] bytes = new byte[length];
 
         try {
-            // Seek to offset and read the bytes into the array
+            // Seek to offset.
             fsFile.seek(offset);
+
+            // Read the data into the array.
             fsFile.readFully(bytes);
         } catch (IOException ignored) {
         }
 
-        return ByteBuffer.wrap(bytes);
+        return bytes;
     }
 
     @Override
