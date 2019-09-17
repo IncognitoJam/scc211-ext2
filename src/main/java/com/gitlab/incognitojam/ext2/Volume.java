@@ -5,23 +5,22 @@ import java.nio.ByteBuffer;
 
 public class Volume implements Closeable {
     private final RandomAccessFile fsFile;
-    private final Superblock superblock;
+    private Superblock superblock;
 
     public Volume(String filepath) throws IOException {
-        // Open the volume file for reading
-        fsFile = new RandomAccessFile(filepath, "r");
+        this.fsFile = new RandomAccessFile(filepath, "r");
+        setupSuperblock();
+    }
 
-        // Skip the first 1024 bytes, always the boot sector
-        fsFile.skipBytes(1024);
+    private void setupSuperblock() throws IOException {
+        // Superblock starts at byte 1024.
+        fsFile.seek(1024);
 
-        // Read the next 1024 bytes, always the super block
+        // Read the next 1024 bytes.
         byte[] superblockBytes = new byte[1024];
         fsFile.readFully(superblockBytes, 0, 1024);
 
-        System.out.println("Superblock:");
-        ByteUtils.dumpHexBytes(superblockBytes, true);
-
-        // Create a Superblock object from these bytes
+        // Create a Superblock object from these bytes.
         superblock = new Superblock(ByteBuffer.wrap(superblockBytes));
     }
 
@@ -79,13 +78,5 @@ public class Volume implements Closeable {
 
     public int getCapacity() {
         return getBlocks() * getBlockSize();
-    }
-
-    public void printDebugInfo() {
-        System.out.println("Volume debug information:");
-        System.out.println("  label:      " + getLabel());
-        System.out.println("  blocks:     " + getBlocks());
-        System.out.println("  block size: " + ByteUtils.formatHumanReadable(getBlockSize()));
-        System.out.println("  capacity:   " + ByteUtils.formatHumanReadable(getCapacity()));
     }
 }
