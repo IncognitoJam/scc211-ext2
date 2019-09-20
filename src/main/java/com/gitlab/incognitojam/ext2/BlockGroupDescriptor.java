@@ -13,7 +13,6 @@ public class BlockGroupDescriptor {
     private final short freeBlockCount;
     private final short freeInodeCount;
     private final short directoriesCount;
-    private final short unused;
 
     BlockGroupDescriptor(ByteBuffer buffer) {
         // Read the data from the buffer.
@@ -23,7 +22,6 @@ public class BlockGroupDescriptor {
         freeBlockCount = buffer.getShort(); // 12
         freeInodeCount = buffer.getShort(); // 14
         directoriesCount = buffer.getShort(); // 16
-        unused = buffer.getShort(); // 18
     }
 
     /**
