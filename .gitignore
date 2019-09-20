@@ -25,3 +25,7 @@ Thumbs.db
 *.class
 *.jar
 hs_err_pid*
+
+.classpath
+.project
+.settings
