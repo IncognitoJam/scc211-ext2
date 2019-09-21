@@ -2,6 +2,7 @@ package com.gitlab.incognitojam.ext2;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class Volume implements Closeable {
     private final RandomAccessFile fsFile;
@@ -10,11 +11,11 @@ public class Volume implements Closeable {
 
     public Volume(String filepath) throws IOException {
         this.fsFile = new RandomAccessFile(filepath, "r");
-        setupSuperblock();
-        setupBlockGroupDescriptorTable();
+        initialiseSuperblock();
+        initialiseBlockGroupDescriptorTable();
     }
 
-    private void setupSuperblock() throws IOException {
+    private void initialiseSuperblock() throws IOException {
         // Superblock starts at byte 1024.
         fsFile.seek(1024);
 
@@ -23,13 +24,15 @@ public class Volume implements Closeable {
         fsFile.readFully(superblockBytes, 0, 1024);
 
         // Create a Superblock object from these bytes.
-        superblock = new Superblock(ByteBuffer.wrap(superblockBytes));
+        ByteBuffer buffer = ByteBuffer.wrap(superblockBytes);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        superblock = new Superblock(buffer);
     }
 
-    private void setupBlockGroupDescriptorTable() {
+    private void initialiseBlockGroupDescriptorTable() {
         // Read the BGD table from disk.
         // FIXME: the index might be different for other block sizes
-        ByteBuffer buffer = readBlock(2);
+        ByteBuffer buffer = getBlock(2);
 
         // number of groups = number of blocks / number of blocks per group
         final int blockGroupCount =
@@ -59,14 +62,18 @@ public class Volume implements Closeable {
      * @return Returns a ByteBuffer backed by an array of bytes read from the
      * disk.
      */
-    private ByteBuffer readBlock(int index) {
+    private ByteBuffer getBlock(int index) {
         // Location of the block from the start of the disk.
         final int offset = index * superblock.getFsBlockSize();
 
         // Read the bytes from disk.
         final byte[] bytes = readRange(offset, superblock.getFsBlockSize());
 
-        return ByteBuffer.wrap(bytes);
+        // Construct ByteBuffer and set endianness to LITTLE_ENDIAN.
+        final ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+
+        return buffer;
     }
 
     /**

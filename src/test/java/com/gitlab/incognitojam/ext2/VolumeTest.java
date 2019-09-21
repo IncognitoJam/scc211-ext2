@@ -24,14 +24,10 @@ public class VolumeTest {
     }
 
     @Test public void testVolumeReadsBlocksCount() {
-        assertEquals(5242880, volume.getBlocks());
+        assertEquals(20480, volume.getBlocks());
     }
 
     @Test public void testVolumeReadsBlockSize() {
         assertEquals(1024, volume.getBlockSize());
-    }
-
-    @Test public void testVolumeCalculatesCapacity() {
-        assertEquals(1024 * 1024 * 1024, volume.getCapacity());
     }
 }

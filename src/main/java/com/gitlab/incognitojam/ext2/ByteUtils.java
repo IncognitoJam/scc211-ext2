@@ -52,7 +52,7 @@ public class ByteUtils {
      * Present an array of bytes in a hexadecimal view, similar to the output
      * of the hexdump command on Unix systems. The formatted data will be
      * written to the console.
-     *
+     * <p>
      * TODO: optionally, condense duplicate lines
      *
      * @param bytes       the byte array to format
