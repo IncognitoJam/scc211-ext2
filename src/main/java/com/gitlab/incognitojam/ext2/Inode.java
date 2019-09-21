@@ -174,7 +174,7 @@ public class Inode {
     private final int deletedTime;
     private final short groupId;
     private final short hardLinksCount;
-    private final int[] dataPtrs;
+    private final int[] directPtrs;
     private final int indirectPtr;
     private final int doubleIndirectPtr;
     private final int tripleIndirectPtr;
@@ -186,6 +186,7 @@ public class Inode {
      * @param buffer the buffer to read data from
      */
     Inode(ByteBuffer buffer) {
+        // Record the starting buffer position so that we can skip forward later.
         final int pos = buffer.position();
 
         fileMode = buffer.getShort();
@@ -201,18 +202,22 @@ public class Inode {
         // skip irrelevant fields
         buffer.position(pos + 28);
 
-        dataPtrs = new int[12];
+        // Read block pointers.
+        directPtrs = new int[12];
         for (int i = 0; i < 12; i++)
-            dataPtrs[i] = buffer.getInt();
+            directPtrs[i] = buffer.getInt(); // 1-12
 
-        indirectPtr = buffer.getInt();
-        doubleIndirectPtr = buffer.getInt();
-        tripleIndirectPtr = buffer.getInt();
+        indirectPtr = buffer.getInt(); // 13
+        doubleIndirectPtr = buffer.getInt(); // 14
+        tripleIndirectPtr = buffer.getInt(); // 15
 
         // skip irrelevant fields
         buffer.position(pos + 88);
 
         fileSizeUpper = buffer.getInt();
+
+        // skip irrelevant fields
+        buffer.position(pos + 128);
     }
 
     /**
@@ -225,55 +230,131 @@ public class Inode {
         return fileMode;
     }
 
+    /**
+     * Records the user ID of the owner of the file.
+     */
     public short getUserId() {
         return userId;
     }
 
+    /**
+     * The lower bytes of the file size field.
+     * 
+     * @see Inode#getFileSizeUpper()
+     * @see Inode#getFileSize()
+     */
     public int getFileSizeLower() {
         return fileSizeLower;
     }
 
+    /**
+     * The last time this inode was accessed.
+     */
     public int getLastAccessTime() {
         return lastAccessTime;
     }
 
+    /**
+     * The time when this inode was created.
+     */
     public int getCreationTime() {
         return creationTime;
     }
 
+    /**
+     * The last time this inode was modified.
+     */
     public int getLastModifiedTime() {
         return lastModifiedTime;
     }
 
+    /**
+     * The time this inode was deleted.
+     */
     public int getDeletedTime() {
         return deletedTime;
     }
 
+    /**
+     * Records the group ID of the owner of the file.
+     */
     public short getGroupId() {
         return groupId;
     }
 
+    /**
+     * Count of how many times this particular node is linked to.
+     * <p>
+     * Most files have a link count of one. Files with hard links pointing to
+     * them will hae an additional count for each hard link.
+     * <p>
+     * When the link count reaches zero, the inode and all of its associated
+     * blocks are freed.
+     */
     public short getHardLinksCount() {
         return hardLinksCount;
     }
 
-    public int[] getDataPtrs() {
-        return dataPtrs;
+    /**
+     * The indices pointing to the blocks containing the data for this inode.
+     */
+    public int[] getDirectPtrs() {
+        return directPtrs;
     }
 
+    /**
+     * The block number of the first indirect block, which is a block
+     * containing an array of block indices containing the data for this inode.
+     * <p>
+     * The 13th block of this file will be the first block index contained in
+     * this indirect block, since blocks 1-12 are referenced directly.
+     * 
+     * @see Inode#getDirectPtrs()
+     */
     public int getIndirectPtr() {
         return indirectPtr;
     }
 
+    /**
+     * The block number of the first doubly-indirect block, which is a block
+     * containing an array of indirect block indices, with each of those
+     * indirect blocks containing an array of blocks indices pointing to the
+     * data.
+     * 
+     * @see Inode#getIndirectPtr()
+     */
     public int getDoubleIndirectPtr() {
         return doubleIndirectPtr;
     }
 
+    /**
+     * The block number of the triply-indirect block, which is a block
+     * containing an array of double-indirect block indices, with each of those
+     * doubly-indirect blocks containing an array of indirect block indices,
+     * and each of those indirect blocks containing an array of block indices
+     * pointing to the data.
+     * 
+     * @see Inode#getDoubleIndirectPtr()
+     */
     public int getTripleIndirectPtr() {
         return tripleIndirectPtr;
     }
 
+    /**
+     * The upper bytes of the file size field.
+     * 
+     * @see Inode#getFileSizeLower()
+     * @see Inode#getFileSize()
+     */
     public int getFileSizeUpper() {
         return fileSizeUpper;
+    }
+
+    /**
+     * The size of this file (if it is a regular file, or a symbolic link) in
+     * bytes.
+     */
+    public long getFileSize() {
+        return ((long)getFileSizeUpper() << 32) | (getFileSizeLower() & 0xFFFFFFFFL);
     }
 }
