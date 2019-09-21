@@ -107,18 +107,40 @@ public class Volume implements Closeable {
         fsFile.close();
     }
 
+    /**
+     * The volume label.
+     * 
+     * @see Superblock#getVolumeLabel()
+     */
     public String getLabel() {
         return superblock.getVolumeLabel();
     }
 
+    /**
+     * The number of blocks in the volume.
+     * 
+     * @see Superblock#getBlocksCount()
+     */
     public int getBlocks() {
         return superblock.getBlocksCount();
     }
 
+    /**
+     * The size of each block, in bytes.
+     * 
+     * @see Superblock#getFsBlockSize()
+     */
     public int getBlockSize() {
         return superblock.getFsBlockSize();
     }
 
+    /**
+     * The total capacity of the volume, equivalent to the product of the
+     * number of blocks in the volume and the size of each block, in bytes.
+     * 
+     * @see Volume#getBlocks
+     * @see Volume#getBlockSize
+     */
     public int getCapacity() {
         return getBlocks() * getBlockSize();
     }
