@@ -50,6 +50,42 @@ public class Volume implements Closeable {
     }
 
     /**
+     * Read an inode from disk by its number.
+     * <p>
+     * Calculates the block group containing the inode, finds it's inode table
+     * and reads the required bytes to construct an inode struct.
+     * 
+     * @param inodeNumber the inode number
+     * @return returns the inode from disk
+     */
+    private Inode getInode(int inodeNumber) {
+        /*
+         * Calculate the block group number from the inode number and the
+         * number of inodes per group.
+         */
+        int blockGroupIndex = (inodeNumber - 1) / superblock.getInodesInGroup();
+
+        // Get the block group descriptor and the inode table block index.
+        BlockGroupDescriptor bgd = blockGroupDescriptors[blockGroupIndex];
+        int inodeTablePtr = bgd.getInodeTablePtr();
+
+        // Read the inode table from disk.
+        ByteBuffer inodeTable = getBlock(inodeTablePtr);
+
+        /*
+         * Calculate the local inode index from the inode number and the number
+         * of inodes per group.
+         */
+        int localInodeIndex = (inodeNumber - 1) % superblock.getInodesInGroup();
+
+        // Construct the inode.
+        inodeTable.position(localInodeIndex * superblock.getInodeSize());
+        Inode inode = new Inode(inodeTable);
+
+        return inode;
+    }
+
+    /**
      * Read a block of data from the disk.
      * <p>
      * {@link Superblock} <b>must</b> be read before use, as the block size
