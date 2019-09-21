@@ -12,6 +12,7 @@ public class InodeTest {
         assertEquals("----------", FileModes.toString(IFREG));
         assertEquals("d---------", FileModes.toString(IFDIR));
         assertEquals("-rwxr-xr-x", FileModes.toString(IFREG | IRUSR | IWUSR | IXUSR | IRGRP | IXGRP | IROTH | IXOTH));
-        assertEquals("-rwxrwxrwx", FileModes.toString(IFREG | IRUSR | IWUSR | IXUSR | IRGRP | IWGRP | IXGRP | IROTH | IWOTH | IXOTH));
+        assertEquals("-rwxrwxrwx",
+                FileModes.toString(IFREG | IRUSR | IWUSR | IXUSR | IRGRP | IWGRP | IXGRP | IROTH | IWOTH | IXOTH));
     }
 }
