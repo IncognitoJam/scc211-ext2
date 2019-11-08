@@ -80,9 +80,7 @@ public class Volume implements Closeable {
 
         // Construct the inode.
         inodeTable.position(localInodeIndex * superblock.getInodeSize());
-        Inode inode = new Inode(inodeTable);
-
-        return inode;
+        return new Inode(inodeTable);
     }
 
     /**
