@@ -27,5 +27,5 @@ dependencies {
 
 application {
     // Define the main class for the application
-    mainClassName = 'com.gitlab.incognitojam.ext2.App'
+    mainClassName = 'com.gitlab.incognitojam.demo.Demo'
 }
