@@ -84,7 +84,7 @@ class Superblock {
 
     /**
      * The filesystem 'magic number'.
-     *
+     * <p>
      * This is always 0xEF53 in an ext2 filesystem.
      */
     public short getMagic() {

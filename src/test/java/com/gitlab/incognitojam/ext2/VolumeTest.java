@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class VolumeTest {
     private static final String volumeFilename = "ext2fs";

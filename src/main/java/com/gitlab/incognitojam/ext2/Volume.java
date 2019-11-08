@@ -1,6 +1,8 @@
 package com.gitlab.incognitojam.ext2;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -54,7 +56,7 @@ public class Volume implements Closeable {
      * <p>
      * Calculates the block group containing the inode, finds it's inode table
      * and reads the required bytes to construct an inode struct.
-     * 
+     *
      * @param inodeNumber the inode number
      * @return returns the inode from disk
      */
@@ -143,7 +145,7 @@ public class Volume implements Closeable {
 
     /**
      * The volume label.
-     * 
+     *
      * @see Superblock#getVolumeLabel()
      */
     public String getLabel() {
@@ -152,7 +154,7 @@ public class Volume implements Closeable {
 
     /**
      * The number of blocks in the volume.
-     * 
+     *
      * @see Superblock#getBlocksCount()
      */
     public int getBlocks() {
@@ -161,7 +163,7 @@ public class Volume implements Closeable {
 
     /**
      * The size of each block, in bytes.
-     * 
+     *
      * @see Superblock#getFsBlockSize()
      */
     public int getBlockSize() {
@@ -171,9 +173,9 @@ public class Volume implements Closeable {
     /**
      * The total capacity of the volume, equivalent to the product of the
      * number of blocks in the volume and the size of each block, in bytes.
-     * 
-     * @see Volume#getBlocks
-     * @see Volume#getBlockSize
+     *
+     * @see Volume#getBlocks()
+     * @see Volume#getBlockSize()
      */
     public int getCapacity() {
         return getBlocks() * getBlockSize();

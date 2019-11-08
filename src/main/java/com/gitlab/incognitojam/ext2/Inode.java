@@ -99,7 +99,7 @@ class Inode {
 
         /**
          * Convert a filemode value to it's string representation in unix.
-         * 
+         *
          * @param filemode the filemode value to parse
          * @return returns ASCII representation of the filemode value
          * @see <a href="https://github.com/coreutils/gnulib/blob/master/lib/filemode.c#L96}">strmode in glibc.</a>
@@ -131,7 +131,7 @@ class Inode {
         /**
          * Get a character indicating the type of file descriped by the
          * filemode bits.
-         * 
+         *
          * @param filemode the filemode to parse
          * @return returns the character matching the file type
          */
@@ -177,7 +177,7 @@ class Inode {
 
     /**
      * Construct an Inode by reading data from bytes.
-     * 
+     *
      * @param buffer the buffer to read data from
      */
     Inode(ByteBuffer buffer) {
@@ -218,7 +218,7 @@ class Inode {
     /**
      * Determines the file type and how the file's owner, it's group and others can
      * access the file.
-     * 
+     * <p>
      * See {@link FileModes} for values.
      */
     public short getFileMode() {
@@ -234,7 +234,7 @@ class Inode {
 
     /**
      * The lower bytes of the file size field.
-     * 
+     *
      * @see Inode#getFileSizeUpper()
      * @see Inode#getFileSize()
      */
@@ -303,7 +303,7 @@ class Inode {
      * <p>
      * The 13th block of this file will be the first block index contained in
      * this indirect block, since blocks 1-12 are referenced directly.
-     * 
+     *
      * @see Inode#getDirectPtrs()
      */
     public int getIndirectPtr() {
@@ -315,7 +315,7 @@ class Inode {
      * containing an array of indirect block indices, with each of those
      * indirect blocks containing an array of blocks indices pointing to the
      * data.
-     * 
+     *
      * @see Inode#getIndirectPtr()
      */
     public int getDoubleIndirectPtr() {
@@ -328,7 +328,7 @@ class Inode {
      * doubly-indirect blocks containing an array of indirect block indices,
      * and each of those indirect blocks containing an array of block indices
      * pointing to the data.
-     * 
+     *
      * @see Inode#getDoubleIndirectPtr()
      */
     public int getTripleIndirectPtr() {
@@ -337,7 +337,7 @@ class Inode {
 
     /**
      * The upper bytes of the file size field.
-     * 
+     *
      * @see Inode#getFileSizeLower()
      * @see Inode#getFileSize()
      */
@@ -350,6 +350,6 @@ class Inode {
      * bytes.
      */
     public long getFileSize() {
-        return ((long)getFileSizeUpper() << 32) | (getFileSizeLower() & 0xFFFFFFFFL);
+        return ((long) getFileSizeUpper() << 32) | (getFileSizeLower() & 0xFFFFFFFFL);
     }
 }
