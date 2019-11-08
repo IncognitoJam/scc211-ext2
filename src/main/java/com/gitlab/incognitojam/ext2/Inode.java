@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
  * giving update information, and links to all the data blocks that form each
  * file.
  */
-public class Inode {
+class Inode {
     /**
      * The contents of the file mode field will be some combination of the following
      * values, i.e. the values ORed together. These bits are used to identify the
@@ -159,11 +159,6 @@ public class Inode {
             return (bits & mask) == mask;
         }
     }
-
-    /**
-     * The size of an Inode in bytes.
-     */
-    public static final int STRUCT_SIZE = 128;
 
     private final short fileMode;
     private final short userId;

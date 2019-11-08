@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
  * The Block Group Descriptor contains information regarding where important
  * data structures for that block group are located.
  */
-public class BlockGroupDescriptor {
+class BlockGroupDescriptor {
     private final int blockBitmapPtr;
     private final int inodeBitmapPtr;
     private final int inodeTablePtr;

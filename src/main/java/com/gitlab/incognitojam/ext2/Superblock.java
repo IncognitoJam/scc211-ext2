@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
  * The superblock is a table that holds information about the volume structure,
  * such as the number of blocks, the block size and the volume label.
  */
-public class Superblock {
+class Superblock {
     private final int inodesCount;
     private final int blocksCount;
     private final int fsBlockSize;
