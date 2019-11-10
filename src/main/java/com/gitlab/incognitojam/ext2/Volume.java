@@ -68,11 +68,7 @@ public class Volume implements Closeable {
         int blockGroupIndex = (inodeNumber - 1) / superblock.getInodesInGroup();
 
         // Get the block group descriptor and the inode table block index.
-        BlockGroupDescriptor bgd = blockGroupDescriptors[blockGroupIndex];
-        int inodeTablePtr = bgd.getInodeTablePtr();
-
-        // Read the inode table from disk.
-        ByteBuffer inodeTable = getBlock(inodeTablePtr);
+        int inodeTablePtr = blockGroupDescriptors[blockGroupIndex].getInodeTablePtr();
 
         /*
          * Calculate the local inode index from the inode number and the number
@@ -80,9 +76,12 @@ public class Volume implements Closeable {
          */
         int localInodeIndex = (inodeNumber - 1) % superblock.getInodesInGroup();
 
-        // Construct the inode.
-        inodeTable.position(localInodeIndex * superblock.getInodeSize());
-        return new Inode(inodeTable);
+        // Calculate the inode starting position.
+        int inodePtr = inodeTablePtr * superblock.getFsBlockSize() + localInodeIndex * superblock.getInodeSize();
+
+        // Read the inode data from disk and construct the inode.
+        ByteBuffer buffer = getBytes(inodePtr, superblock.getInodeSize());
+        return new Inode(buffer);
     }
 
     /**
@@ -102,8 +101,22 @@ public class Volume implements Closeable {
         // Location of the block from the start of the disk.
         final int offset = index * superblock.getFsBlockSize();
 
+        return getBytes(offset, superblock.getFsBlockSize());
+    }
+
+    /**
+     * Read a contiguous range of data from the disk.
+     * <p>
+     * The bytes are read from the provided starting offset, and includes the
+     * entire length of bytes.
+     *
+     * @param offset the offset from the beginning of the disk to read from
+     * @return Returns a ByteBuffer backed by an array of bytes read from the
+     * disk.
+     */
+    private ByteBuffer getBytes(int offset, int length) {
         // Read the bytes from disk.
-        final byte[] bytes = readRange(offset, superblock.getFsBlockSize());
+        final byte[] bytes = readRange(offset, length);
 
         // Construct ByteBuffer and set endianness to LITTLE_ENDIAN.
         final ByteBuffer buffer = ByteBuffer.wrap(bytes);
@@ -124,7 +137,7 @@ public class Volume implements Closeable {
          * Create a backing array for the data, size determined from the given
          * length argument.
          */
-        byte[] bytes = new byte[length];
+        final byte[] bytes = new byte[length];
 
         try {
             // Seek to offset.

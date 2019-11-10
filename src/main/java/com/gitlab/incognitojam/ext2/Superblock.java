@@ -43,7 +43,7 @@ class Superblock {
 
         buffer.position(120);
         byte[] labelBytes = new byte[16];
-        buffer.get(labelBytes, 0, 16); // 120
+        buffer.get(labelBytes); // 120
         volumeLabel = new String(labelBytes);
     }
 
