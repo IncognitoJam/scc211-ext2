@@ -48,6 +48,12 @@ public class ByteUtils {
         return String.format("%.1f%c", value, suffix);
     }
 
+    private static final String COLOUR_NULL = "\033[0;90m"; // black bright
+    private static final String COLOUR_ASCII_WHITESPACE = "\033[0;32m"; // green
+    private static final String COLOUR_ASCII_PRINTABLE = "\033[0;36m"; // cyan
+    private static final String COLOUR_OTHER = "\033[0;35m"; // purple
+    private static final String COLOUR_RESET = "\033[0m"; // reset
+
     /**
      * Present an array of bytes in a hexadecimal view, similar to the output
      * of the hexdump command on Unix systems. The formatted data will be
@@ -58,8 +64,9 @@ public class ByteUtils {
      * @param bytes       the byte array to format
      * @param showAddress whether or not to show the address line numbers in
      *                    the output
+     * @param showColours whether or not to format the output with colours
      */
-    public static void dumpHexBytes(byte[] bytes, boolean showAddress) {
+    public static void dumpHexBytes(byte[] bytes, boolean showAddress, boolean showColours) {
         StringBuilder builder = new StringBuilder();
 
         /*
@@ -85,6 +92,12 @@ public class ByteUtils {
 
             // Iterate over each byte in the line.
             for (final byte b : line) {
+                if (showColours) {
+                    final String color = getByteColour(b);
+                    hex.append(color);
+                    ascii.append(color);
+                }
+
                 // Format it in hex, appending it to the hex builder.
                 hex.append(String.format("%02x", b));
                 hex.append(' ');
@@ -117,6 +130,7 @@ public class ByteUtils {
             builder.append(hex);
             builder.append(' ');
             builder.append(ascii);
+            if (showColours) builder.append(COLOUR_RESET);
             builder.append('\n');
 
             // Finally, increment the position by two bytes.
@@ -125,5 +139,24 @@ public class ByteUtils {
 
         // Print the resulting string to the console.
         System.out.println(builder);
+    }
+
+    private static String getByteColour(byte b) {
+        if (b == 0)
+            return COLOUR_NULL;
+        else if (isAsciiWhitespace(b))
+            return COLOUR_ASCII_WHITESPACE;
+        else if (isAsciiPrintable(b))
+            return COLOUR_ASCII_PRINTABLE;
+        else
+            return COLOUR_OTHER;
+    }
+
+    private static boolean isAsciiPrintable(byte b) {
+        return b >= 0x20 && b <= 0x7e;
+    }
+
+    private static boolean isAsciiWhitespace(byte b) {
+        return b == 0x20;
     }
 }
