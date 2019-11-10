@@ -28,7 +28,7 @@ public class ByteUtils {
          * If the number of bytes is less than the lowest unit (1 MiB), just
          * append " B" and return.
          */
-        if (bytes < unit) return bytes + " B";
+        if (bytes < unit) return String.valueOf(bytes);
 
         /*
          * Determine the "exponent" of the unit, or how many times you would
@@ -39,13 +39,13 @@ public class ByteUtils {
         int exponent = (int) (Math.log(bytes) / Math.log(unit));
 
         // Get the correct suffix.
-        String suffix = "KMGTPE".charAt(exponent - 1) + "iB";
+        char suffix = "KMGTPE".charAt(exponent - 1);
 
         // Convert number of bytes to new unit (if MB then divide by 1 mil...).
         double value = bytes / Math.pow(unit, exponent);
 
         // Round the value to 1 DP and format it!
-        return String.format("%.1f %s", value, suffix);
+        return String.format("%.1f%c", value, suffix);
     }
 
     /**

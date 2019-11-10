@@ -12,14 +12,14 @@ public class ByteUtilsTest {
 
     @Test
     public void testFormatHumanReadable() {
-        assertEquals("1 B", ByteUtils.formatHumanReadable(1));
-        assertEquals("1.0 KiB", ByteUtils.formatHumanReadable(unit));
-        assertEquals("1.0 MiB", ByteUtils.formatHumanReadable(unit * unit));
-        assertEquals("1.0 GiB", ByteUtils.formatHumanReadable(unit * unit * unit));
-        assertEquals("1.0 TiB", ByteUtils.formatHumanReadable(unit * unit * unit * unit));
-        assertEquals("1.0 PiB", ByteUtils.formatHumanReadable(unit * unit * unit * unit * unit));
-        assertEquals("1.0 EiB", ByteUtils.formatHumanReadable(unit * unit * unit * unit * unit * unit));
+        assertEquals("1", ByteUtils.formatHumanReadable(1));
+        assertEquals("1.0K", ByteUtils.formatHumanReadable(unit));
+        assertEquals("1.0M", ByteUtils.formatHumanReadable(unit * unit));
+        assertEquals("1.0G", ByteUtils.formatHumanReadable(unit * unit * unit));
+        assertEquals("1.0T", ByteUtils.formatHumanReadable(unit * unit * unit * unit));
+        assertEquals("1.0P", ByteUtils.formatHumanReadable(unit * unit * unit * unit * unit));
+        assertEquals("1.0E", ByteUtils.formatHumanReadable(unit * unit * unit * unit * unit * unit));
 
-        assertEquals("976.6 KiB", ByteUtils.formatHumanReadable(1_000_000L));
+        assertEquals("976.6K", ByteUtils.formatHumanReadable(1_000_000L));
     }
 }
