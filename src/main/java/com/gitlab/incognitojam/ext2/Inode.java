@@ -195,7 +195,7 @@ class Inode {
         hardLinksCount = buffer.getShort();
 
         // skip irrelevant fields
-        buffer.position(pos + 28);
+        buffer.position(pos + 40);
 
         // Read block pointers.
         directPtrs = new int[12];
@@ -207,7 +207,7 @@ class Inode {
         tripleIndirectPtr = buffer.getInt(); // 15
 
         // skip irrelevant fields
-        buffer.position(pos + 88);
+        buffer.position(pos + 104);
 
         fileSizeUpper = buffer.getInt();
 
