@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
  * The Block Group Descriptor contains information regarding where important
  * data structures for that block group are located.
  */
-class BlockGroupDescriptor {
+public class BlockGroupDescriptor {
     private final int blockBitmapPtr;
     private final int inodeBitmapPtr;
     private final int inodeTablePtr;
@@ -14,14 +14,14 @@ class BlockGroupDescriptor {
     private final short freeInodeCount;
     private final short directoriesCount;
 
-    BlockGroupDescriptor(ByteBuffer buffer) {
-        // Read the data from the buffer.
-        blockBitmapPtr = buffer.getInt(); // 0
-        inodeBitmapPtr = buffer.getInt(); // 4
-        inodeTablePtr = buffer.getInt(); // 8
-        freeBlockCount = buffer.getShort(); // 12
-        freeInodeCount = buffer.getShort(); // 14
-        directoriesCount = buffer.getShort(); // 16
+    BlockGroupDescriptor(byte[] bytes) {
+        ByteBuffer buffer = ByteUtils.wrap(bytes);
+        blockBitmapPtr = buffer.getInt(0);
+        inodeBitmapPtr = buffer.getInt(4);
+        inodeTablePtr = buffer.getInt(8);
+        freeBlockCount = buffer.getShort(12);
+        freeInodeCount = buffer.getShort(14);
+        directoriesCount = buffer.getShort(16);
     }
 
     /**
