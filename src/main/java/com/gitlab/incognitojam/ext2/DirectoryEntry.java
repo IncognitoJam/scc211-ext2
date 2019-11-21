@@ -2,20 +2,18 @@ package com.gitlab.incognitojam.ext2;
 
 import java.nio.ByteBuffer;
 
-class DirectoryEntry {
+public class DirectoryEntry {
     private final int inode;
     private final short length;
-    private final short labelLength;
     private final short fileMode;
     private final String label;
 
     DirectoryEntry(ByteBuffer buffer) {
-        inode = buffer.getInt();
-        length = buffer.getShort();
+        inode = buffer.getInt(0);
+        length = buffer.getShort(4);
 
-        final short data = buffer.getShort();
-        labelLength = (short) (data & 0xF);
-        fileMode = (short) (data << 8);
+        short labelLength = buffer.get(6);
+        fileMode = buffer.get(7);
 
         final byte[] labelBytes = new byte[labelLength];
         buffer.get(labelBytes, 0, labelLength);
@@ -41,15 +39,6 @@ class DirectoryEntry {
      */
     public short getLength() {
         return length;
-    }
-
-    /**
-     * The length of the directory entry label.
-     *
-     * @return returns the length of the directory entry label, in bytes
-     */
-    public short getLabelLength() {
-        return labelLength;
     }
 
     /**
