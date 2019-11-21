@@ -1,6 +1,7 @@
 package com.gitlab.incognitojam.ext2;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * Inodes hold information about the files and directories held within the
@@ -206,6 +207,144 @@ public class Inode {
 
         int fileSizeUpper = buffer.getInt(104);
         fileSize = ((long) fileSizeUpper << 32) | (fileSizeLower & 0xFFFFFFFFL);
+    }
+
+    public byte[] read(Volume volume, long startOffset, int length) {
+        /*
+         * Calculate the local block number and starting byte for the data we
+         * we want to read inside this file.
+         *
+         * For example, to read bytes [0, 32) we need local block 0 starting at
+         * local byte 0. To read bytes [1500, 1600) we need local block 1
+         * starting at local byte 476.
+         */
+        // first inode data block to read from
+        final int localBlockStartNumber = (int) Long.divideUnsigned(startOffset, volume.getBlockSize());
+
+        // starting position in first block
+        final int localBlockStartOffset = (int) Long.remainderUnsigned(startOffset, volume.getBlockSize());
+
+        byte[] dst = new byte[length];
+        int bytesRead = 0;
+        int localBlockNumber = localBlockStartNumber;
+        while (bytesRead < length) {
+            /*
+             * The offset to read from in this block should be "local block
+             * start offset" if it's the first block we are reading, otherwise
+             * read from the start of the block.
+             */
+            final int localOffset = bytesRead == 0 ? localBlockStartOffset : 0;
+
+            /*
+             * The length of data to read is either from the local offset to
+             * the end of the block, or the total number of bytes read so far
+             * minus the total length to read, whichever is smaller.
+             */
+            final int localLength = Math.min(volume.getBlockSize() - localOffset, length - bytesRead);
+
+            final int dataBlock = getBlockNumber(volume, localBlockNumber);
+            if (dataBlock == 0) {
+                /*
+                 * We are attempting to read a hole in the file, so fill with
+                 * zero bytes.
+                 */
+                Arrays.fill(dst, bytesRead, bytesRead + localLength, (byte) 0);
+            } else {
+                volume.seek(dataBlock * volume.getBlockSize() + localOffset);
+                volume.read(dst, bytesRead, localLength);
+            }
+
+            /*
+             * Count up the total number of bytes read and increment the local
+             * block pointer.
+             */
+            bytesRead += localLength;
+            localBlockNumber++;
+        }
+
+        return dst;
+    }
+
+    private int getBlockNumber(Volume volume, int localBlockNumber) {
+        /*
+         * If the requested local block number is less than 12, this means the
+         * data is held in one of the first direct pointers.
+         */
+        if (localBlockNumber < 12)
+            return directPtrs[localBlockNumber];
+        localBlockNumber -= 12;
+
+        /*
+         * If the localBlockNumber is in 0 <= x < 256, then the data we need is
+         * in a block referenced by the indirect block data.
+         *
+         * Navigate to indirectPtr + localBlockNumber * sizeof(int) and read
+         * the int to get the ptr to the data block.
+         */
+        final int ptrsPerBlock = volume.getBlockSize() / 4;
+        if (localBlockNumber < ptrsPerBlock) {
+            volume.seek(indirectPtr * volume.getBlockSize() + localBlockNumber * 4);
+            byte[] directPtrData = new byte[4];
+            volume.read(directPtrData, 0, 4);
+            return ByteUtils.wrap(directPtrData).getInt();
+        }
+        localBlockNumber -= ptrsPerBlock;
+
+        /*
+         * If the localBlockNumber is in 0 <= x < 65536, then the data we need
+         * is in a block referenced by the double indirect block data.
+         *
+         * Navigate to doubleIndirectPtr + (localBlockNumber / 256) * sizeof(int)
+         * and read the int to get the ptr to the indirect data block.
+         *
+         * Now navigate to indirectPtr + (localBlockNumber % 256) * sizeof(int)
+         * and read the int to get the ptr to the data block.
+         */
+        if (localBlockNumber < ptrsPerBlock * ptrsPerBlock) {
+            volume.seek(doubleIndirectPtr * volume.getBlockSize() + (localBlockNumber / 256) * 4);
+            byte[] indirectPtrData = new byte[4];
+            volume.read(indirectPtrData, 0, 4);
+            int indirectPtr = ByteUtils.wrap(indirectPtrData).getInt();
+
+            volume.seek(indirectPtr * volume.getBlockSize() + (localBlockNumber % 256) * 4);
+            byte[] directPtrData = new byte[4];
+            volume.read(directPtrData, 0, 4);
+            return ByteUtils.wrap(directPtrData).getInt();
+        }
+        localBlockNumber -= ptrsPerBlock * ptrsPerBlock;
+
+        /*
+         * If the localBlockNumber is in 0 <= x < 16777216, then the data we
+         * need is in a block referenced by the triple indirect block data.
+         *
+         * Navigate to tripleIndirectPtr + (localBlockNumber / 65536) * sizeof(int)
+         * and read the int to get the ptr to the double indirect data block.
+         *
+         * Now navigate to doubleIndirectPtr + ((localBlockNumber % 65536) / 256) * sizeof(int)
+         * and read the int to get the ptr to the indirect data block.
+         *
+         * Now navigate to indirectPtr + (localBlockNumber % 256) * sizeof(int) and read
+         * the int to get the ptr to the data block.
+         */
+        if (localBlockNumber < ptrsPerBlock * ptrsPerBlock * ptrsPerBlock) {
+            volume.seek(tripleIndirectPtr * volume.getBlockSize() + (localBlockNumber / 65536) * 4);
+            byte[] doubleIndirectPtrData = new byte[4];
+            volume.read(doubleIndirectPtrData, 0, 4);
+            int doubleIndirectPtr = ByteUtils.wrap(doubleIndirectPtrData).getInt();
+
+            volume.seek(doubleIndirectPtr * volume.getBlockSize() + ((localBlockNumber % 65536) / 256) * 4);
+            byte[] indirectPtrData = new byte[4];
+            volume.read(indirectPtrData, 0, 4);
+            int indirectPtr = ByteUtils.wrap(indirectPtrData).getInt();
+
+            volume.seek(indirectPtr * volume.getBlockSize() + (localBlockNumber % 256) * 4);
+            byte[] directPtrData = new byte[4];
+            volume.read(directPtrData, 0, 4);
+            return ByteUtils.wrap(directPtrData).getInt();
+        }
+
+        // if we get here, something has gone wrong
+        throw new IllegalStateException("invalid inode data ptr");
     }
 
     public int getInodeNumber() {
