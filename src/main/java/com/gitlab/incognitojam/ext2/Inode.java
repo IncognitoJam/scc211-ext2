@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
  * giving update information, and links to all the data blocks that form each
  * file.
  */
-class Inode {
+public class Inode {
     /**
      * The contents of the file mode field will be some combination of the following
      * values, i.e. the values ORed together. These bits are used to identify the
@@ -155,7 +155,7 @@ class Inode {
             return '?';
         }
 
-        private static boolean testBitmask(final int bits, final int mask) {
+        public static boolean testBitmask(final int bits, final int mask) {
             return (bits & mask) == mask;
         }
     }
