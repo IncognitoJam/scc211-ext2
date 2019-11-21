@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
  * The superblock is a table that holds information about the volume structure,
  * such as the number of blocks, the block size and the volume label.
  */
-class Superblock {
+public class Superblock {
     private final int inodesCount;
     private final int blocksCount;
     private final int fsBlockSize;
@@ -19,31 +19,26 @@ class Superblock {
     /**
      * Read new superblock table from a byte buffer.
      *
-     * @param buffer the byte buffer to read the table from
+     * @param bytes the byte array to read the table from
      */
-    Superblock(ByteBuffer buffer) {
-        buffer.position(0);
-        inodesCount = buffer.getInt(); // 0
-        blocksCount = buffer.getInt(); // 4
+    Superblock(byte[] bytes) {
+        ByteBuffer buffer = ByteUtils.wrap(bytes);
+        inodesCount = buffer.getInt(0);
+        blocksCount = buffer.getInt(4);
 
         // NOTE: filesystem image is corrupt, block size is zero
-        // Assume block size is 1024 KiB
-        buffer.position(24);
-        int fsBlockSize = buffer.getInt();
-        this.fsBlockSize = fsBlockSize == 0 ? 1024 : fsBlockSize; // 24
+        // Assume block size is 1024
+        int fsBlockSize = buffer.getInt(24);
+        this.fsBlockSize = fsBlockSize == 0 ? 1024 : fsBlockSize;
 
-        buffer.position(32);
-        blocksInGroup = buffer.getInt(); // 32
-        buffer.position(40);
-        inodesInGroup = buffer.getInt(); // 40
-        buffer.position(56);
-        magic = buffer.getShort(); // 56
-        buffer.position(88);
-        inodeSize = buffer.getInt(); // 88
+        blocksInGroup = buffer.getInt(32);
+        inodesInGroup = buffer.getInt(40);
+        magic = buffer.getShort(56);
+        inodeSize = buffer.getInt(88);
 
-        buffer.position(120);
         byte[] labelBytes = new byte[16];
-        buffer.get(labelBytes); // 120
+        buffer.position(120);
+        buffer.get(labelBytes);
         volumeLabel = new String(labelBytes);
     }
 
