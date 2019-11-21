@@ -1,5 +1,7 @@
 package com.gitlab.incognitojam.ext2;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
 /**
@@ -158,5 +160,11 @@ public class ByteUtils {
 
     private static boolean isAsciiWhitespace(byte b) {
         return b == 0x20;
+    }
+
+    public static ByteBuffer wrap(byte[] array) {
+        ByteBuffer buffer = ByteBuffer.wrap(array);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        return buffer;
     }
 }
