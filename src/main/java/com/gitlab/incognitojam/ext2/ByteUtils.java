@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 /**
  * Utility methods relating to bytes.
- *
+ * <p>
  * TODO: improve documentation
  */
 public class ByteUtils {
@@ -20,7 +20,6 @@ public class ByteUtils {
      *
      * bytesLabel.equals("976.6 KiB"); // true
      * </pre></blockquote></p>
-     * <p>
      *
      * @param bytes the value of bytes to format
      * @return returns formatted string with correct suffix
