@@ -163,6 +163,9 @@ public class Volume implements Closeable {
         return inode;
     }
 
+    /**
+     * TODO(docs): write javadoc
+     */
     void seek(long pos) {
         try {
             fsFile.seek(pos);
@@ -172,10 +175,16 @@ public class Volume implements Closeable {
         }
     }
 
+    /**
+     * TODO(docs): write javadoc
+     */
     void read(byte[] dst) {
         read(dst, 0, dst.length);
     }
 
+    /**
+     * TODO(docs): write javadoc
+     */
     void read(byte[] dst, int offset, int length) {
         try {
             fsFile.read(dst, offset, length);

@@ -2,12 +2,18 @@ package com.gitlab.incognitojam.ext2;
 
 import java.nio.ByteBuffer;
 
+/**
+ * TODO(docs): write javadoc
+ */
 public class DirectoryEntry {
     private final int inode;
     private final short length;
     private final byte fileType;
     private final String label;
 
+    /**
+     * TODO(docs): write javadoc
+     */
     DirectoryEntry(ByteBuffer buffer) {
         inode = buffer.getInt();
         length = buffer.getShort();

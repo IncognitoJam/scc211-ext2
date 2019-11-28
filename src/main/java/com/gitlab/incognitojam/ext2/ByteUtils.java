@@ -6,6 +6,8 @@ import java.util.Arrays;
 
 /**
  * Utility methods relating to bytes.
+ *
+ * TODO: improve documentation
  */
 public class ByteUtils {
     /**
@@ -143,6 +145,9 @@ public class ByteUtils {
         System.out.println(builder);
     }
 
+    /**
+     * TODO(docs): write javadoc
+     */
     private static String getByteColour(byte b) {
         if (b == 0)
             return COLOUR_NULL;
@@ -154,14 +159,23 @@ public class ByteUtils {
             return COLOUR_OTHER;
     }
 
+    /**
+     * TODO(docs): write javadoc
+     */
     private static boolean isAsciiPrintable(byte b) {
         return b >= 0x20 && b <= 0x7e;
     }
 
+    /**
+     * TODO(docs): write javadoc
+     */
     private static boolean isAsciiWhitespace(byte b) {
         return b == 0x20;
     }
 
+    /**
+     * TODO(docs): write javadoc
+     */
     public static ByteBuffer wrap(byte[] array) {
         ByteBuffer buffer = ByteBuffer.wrap(array);
         buffer.order(ByteOrder.LITTLE_ENDIAN);

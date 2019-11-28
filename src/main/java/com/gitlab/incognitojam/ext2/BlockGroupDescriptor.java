@@ -14,6 +14,9 @@ public class BlockGroupDescriptor {
     private final short freeInodeCount;
     private final short directoriesCount;
 
+    /**
+     * TODO(docs): write javadoc
+     */
     BlockGroupDescriptor(byte[] bytes) {
         ByteBuffer buffer = ByteUtils.wrap(bytes);
         blockBitmapPtr = buffer.getInt(0);
