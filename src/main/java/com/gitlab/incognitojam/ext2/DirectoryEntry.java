@@ -22,7 +22,7 @@ public class DirectoryEntry {
         fileType = buffer.get();
 
         final byte[] labelBytes = new byte[labelLength];
-        buffer.get(labelBytes, 0, labelLength);
+        buffer.get(labelBytes);
         label = new String(labelBytes);
     }
 
