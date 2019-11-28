@@ -272,6 +272,33 @@ public class Inode {
     /**
      * TODO(docs): write javadoc
      */
+    DirectoryEntry[] getEntries() {
+        if (!FileModes.testBitmask(getFileMode(), FileModes.IFDIR))
+            throw new UnsupportedOperationException("Must only call Inode#getEntries() on directories.");
+
+        final int size = (int) getFileSize();
+        byte[] dataBytes = read(0, size);
+        ByteBuffer buffer = ByteUtils.wrap(dataBytes);
+
+        List<DirectoryEntry> entries = new ArrayList<>();
+        int ptr = 0;
+        while (ptr < size) {
+            buffer.position(ptr);
+            DirectoryEntry entry = new DirectoryEntry(buffer);
+
+            // Skip entries which don't point to a valid inode
+            if (entry.getInode() > 0)
+                entries.add(entry);
+
+            ptr += entry.getLength();
+        }
+
+        return entries.toArray(new DirectoryEntry[entries.size()]);
+    }
+
+    /**
+     * TODO(docs): write javadoc
+     */
     private static int readPtr(Volume volume) {
         byte[] ptrData = new byte[4];
         volume.read(ptrData);
