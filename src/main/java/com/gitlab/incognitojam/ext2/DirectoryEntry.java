@@ -5,15 +5,15 @@ import java.nio.ByteBuffer;
 public class DirectoryEntry {
     private final int inode;
     private final short length;
-    private final short fileMode;
+    private final byte fileType;
     private final String label;
 
     DirectoryEntry(ByteBuffer buffer) {
-        inode = buffer.getInt(0);
-        length = buffer.getShort(4);
+        inode = buffer.getInt();
+        length = buffer.getShort();
 
-        short labelLength = buffer.get(6);
-        fileMode = buffer.get(7);
+        byte labelLength = buffer.get();
+        fileType = buffer.get();
 
         final byte[] labelBytes = new byte[labelLength];
         buffer.get(labelBytes, 0, labelLength);
@@ -42,15 +42,12 @@ public class DirectoryEntry {
     }
 
     /**
-     * Determines the file type and how the file's owner, it's group and others can
-     * access the file.
-     * <p>
-     * See {@link Inode.FileModes} for values.
+     * TODO: write explanation
      *
-     * @return returns the file mode bits
+     * @return returns the file type identifier
      */
-    public short getFileMode() {
-        return fileMode;
+    public byte getFileType() {
+        return fileType;
     }
 
     /**
