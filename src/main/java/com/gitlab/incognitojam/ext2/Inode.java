@@ -1,7 +1,9 @@
 package com.gitlab.incognitojam.ext2;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Inodes hold information about the files and directories held within the
@@ -208,7 +210,10 @@ public class Inode {
         fileSize = ((long) fileSizeUpper << 32) | (fileSizeLower & 0xFFFFFFFFL);
     }
 
-    public byte[] read(Volume volume, long startOffset, int length) {
+    /**
+     * TODO(docs): write javadoc
+     */
+    byte[] read(long startOffset, int length) {
         /*
          * Calculate the local block number and starting byte for the data we
          * we want to read inside this file.
@@ -241,7 +246,7 @@ public class Inode {
              */
             final int localLength = Math.min(volume.getBlockSize() - localOffset, length - bytesRead);
 
-            final int dataBlock = getBlockNumber(volume, localBlockNumber);
+            final int dataBlock = traverseDataPtrs(localBlockNumber);
             if (dataBlock == 0) {
                 /*
                  * We are attempting to read a hole in the file, so fill with
@@ -264,7 +269,37 @@ public class Inode {
         return dst;
     }
 
-    private int getBlockNumber(Volume volume, int localBlockNumber) {
+    /**
+     * TODO(docs): write javadoc
+     */
+    private static int readPtr(Volume volume) {
+        byte[] ptrData = new byte[4];
+        volume.read(ptrData);
+        return ByteUtils.wrap(ptrData).getInt();
+    }
+
+    /**
+     * Retrieve a data block pointer for this inode by it's local index.
+     * <p>
+     * The block pointer to data block 0 can be retrieved from the {@link Inode#directPtrs}
+     * array at index 0, while data block 11 is found in the {@link Inode#directPtrs}
+     * array at index 11. Higher indices are referenced indirectly, such as
+     * data block 12 which is located in the first indirect data block at
+     * position 0.
+     * <p>
+     * Which each added level of indirection, more data blocks must be read
+     * at a particular offset to retrieve the real data block pointer. This
+     * method is used to perform this traversal of the tree.
+     * <p>
+     * This method supports up to three levels of indirection, or triple
+     * indirect pointers.
+     *
+     * @param localBlockNumber the data block to read in this inode, in the
+     *                         range <pre>0 <= localBlockNumber < 16843020</pre>
+     *                         for filesystems with 1K block size.
+     * @return Returns the real pointer to the data block on disk.
+     */
+    private int traverseDataPtrs(int localBlockNumber) {
         /*
          * If the requested local block number is less than 12, this means the
          * data is held in one of the first direct pointers.
@@ -282,10 +317,10 @@ public class Inode {
          */
         final int ptrsPerBlock = volume.getBlockSize() / 4;
         if (localBlockNumber < ptrsPerBlock) {
+            if (indirectPtr == 0) return 0;
+
             volume.seek(indirectPtr * volume.getBlockSize() + localBlockNumber * 4);
-            byte[] directPtrData = new byte[4];
-            volume.read(directPtrData, 0, 4);
-            return ByteUtils.wrap(directPtrData).getInt();
+            return readPtr(volume);
         }
         localBlockNumber -= ptrsPerBlock;
 
@@ -300,15 +335,14 @@ public class Inode {
          * and read the int to get the ptr to the data block.
          */
         if (localBlockNumber < ptrsPerBlock * ptrsPerBlock) {
+            if (doubleIndirectPtr == 0) return 0;
+
             volume.seek(doubleIndirectPtr * volume.getBlockSize() + (localBlockNumber / 256) * 4);
-            byte[] indirectPtrData = new byte[4];
-            volume.read(indirectPtrData, 0, 4);
-            int indirectPtr = ByteUtils.wrap(indirectPtrData).getInt();
+            int indirectPtr = readPtr(volume);
+            if (indirectPtr == 0) return 0;
 
             volume.seek(indirectPtr * volume.getBlockSize() + (localBlockNumber % 256) * 4);
-            byte[] directPtrData = new byte[4];
-            volume.read(directPtrData, 0, 4);
-            return ByteUtils.wrap(directPtrData).getInt();
+            return readPtr(volume);
         }
         localBlockNumber -= ptrsPerBlock * ptrsPerBlock;
 
@@ -326,20 +360,18 @@ public class Inode {
          * the int to get the ptr to the data block.
          */
         if (localBlockNumber < ptrsPerBlock * ptrsPerBlock * ptrsPerBlock) {
+            if (tripleIndirectPtr == 0) return 0;
+
             volume.seek(tripleIndirectPtr * volume.getBlockSize() + (localBlockNumber / 65536) * 4);
-            byte[] doubleIndirectPtrData = new byte[4];
-            volume.read(doubleIndirectPtrData, 0, 4);
-            int doubleIndirectPtr = ByteUtils.wrap(doubleIndirectPtrData).getInt();
+            int doubleIndirectPtr = readPtr(volume);
+            if (doubleIndirectPtr == 0) return 0;
 
             volume.seek(doubleIndirectPtr * volume.getBlockSize() + ((localBlockNumber % 65536) / 256) * 4);
-            byte[] indirectPtrData = new byte[4];
-            volume.read(indirectPtrData, 0, 4);
-            int indirectPtr = ByteUtils.wrap(indirectPtrData).getInt();
+            int indirectPtr = readPtr(volume);
+            if (indirectPtr == 0) return 0;
 
             volume.seek(indirectPtr * volume.getBlockSize() + (localBlockNumber % 256) * 4);
-            byte[] directPtrData = new byte[4];
-            volume.read(directPtrData, 0, 4);
-            return ByteUtils.wrap(directPtrData).getInt();
+            return readPtr(volume);
         }
 
         // if we get here, something has gone wrong
