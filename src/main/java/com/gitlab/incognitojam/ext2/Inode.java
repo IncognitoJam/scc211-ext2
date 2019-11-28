@@ -192,8 +192,8 @@ public class Inode {
         creationTime = buffer.getInt(12);
         lastModifiedTime = buffer.getInt(16);
         deletedTime = buffer.getInt(20);
-        groupId = buffer.getShort(22);
-        hardLinksCount = buffer.getShort(24);
+        groupId = buffer.getShort(24);
+        hardLinksCount = buffer.getShort(26);
 
         // Read block pointers.
         directPtrs = new int[12];
