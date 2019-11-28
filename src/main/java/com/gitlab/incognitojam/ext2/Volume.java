@@ -76,7 +76,7 @@ public class Volume implements Closeable {
      * @param inodeNumber the inode number
      * @return returns the inode from disk
      */
-    private Inode getInode(int inodeNumber) {
+    Inode getInode(int inodeNumber) {
         /*
          * Calculate the block group number from the inode number and the
          * number of inodes per group.
