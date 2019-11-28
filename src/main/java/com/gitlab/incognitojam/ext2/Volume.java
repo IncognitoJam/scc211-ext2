@@ -1,54 +1,70 @@
 package com.gitlab.incognitojam.ext2;
 
+import com.gitlab.incognitojam.ext2.Inode.FileModes;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
+/**
+ * TODO(docs): write javadoc
+ */
 public class Volume implements Closeable {
     private final RandomAccessFile fsFile;
-    private Superblock superblock;
-    private BlockGroupDescriptor[] blockGroupDescriptors;
+    private final Superblock superblock;
+    private final BlockGroupDescriptor[] blockGroupDescriptors;
 
+    /**
+     * TODO(docs): write javadoc
+     */
     public Volume(String filepath) throws IOException {
         this.fsFile = new RandomAccessFile(filepath, "r");
-        initialiseSuperblock();
-        initialiseBlockGroupDescriptorTable();
+        this.superblock = readSuperblock();
+        this.blockGroupDescriptors = readBlockGroupDescriptorTable();
     }
 
-    private void initialiseSuperblock() throws IOException {
-        // Superblock starts at byte 1024.
-        fsFile.seek(1024);
+    /**
+     * TODO(docs): write javadoc
+     */
+    private Superblock readSuperblock() {
+        // Superblock starts at byte 1024 so we skip the first 1024 bytes.
+        seek(1024);
 
         // Read the next 1024 bytes.
         byte[] superblockBytes = new byte[1024];
-        fsFile.readFully(superblockBytes, 0, 1024);
+        read(superblockBytes);
 
-        // Create a Superblock object from these bytes.
-        ByteBuffer buffer = ByteBuffer.wrap(superblockBytes);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        superblock = new Superblock(buffer);
+        // Construct a Superblock object from these bytes.
+        return new Superblock(superblockBytes);
     }
 
-    private void initialiseBlockGroupDescriptorTable() {
-        // Read the BGD table from disk.
+    /**
+     * TODO(docs): write javadoc
+     */
+    private BlockGroupDescriptor[] readBlockGroupDescriptorTable() {
         // FIXME: the index might be different for other block sizes
-        ByteBuffer buffer = getBlock(2);
+        final int bgdLength = 32;
+        final int bgdTableBlockPtr = 2 * getBlockSize();
 
         // number of groups = number of blocks / number of blocks per group
         final int blockGroupCount =
-                (int) Math.ceil((double) superblock.getBlocksCount() / (double) superblock.getBlocksInGroup());
+                (int) Math.ceil((double) getBlocks() / (double) superblock.getBlocksInGroup());
 
         // Construct the BGDs.
-        blockGroupDescriptors = new BlockGroupDescriptor[blockGroupCount];
-        for (int i = 0; i < blockGroupCount; i++)
-            /*
-             * We pass the buffer to the BGD constructor as-is, since each BGD
-             * immediately follows the previous, so the buffer pointer will
-             * already be in the correct position.
-             */
-            blockGroupDescriptors[i] = new BlockGroupDescriptor(buffer);
+        BlockGroupDescriptor[] bgdTable = new BlockGroupDescriptor[blockGroupCount];
+        for (int i = 0; i < blockGroupCount; i++) {
+            byte[] bgdBytes = new byte[bgdLength];
+            int ptr = bgdTableBlockPtr + i * bgdLength;
+            seek(ptr);
+            read(bgdBytes);
+            bgdTable[i] = new BlockGroupDescriptor(bgdBytes);
+        }
+
+        return bgdTable;
     }
 
     /**
@@ -77,83 +93,96 @@ public class Volume implements Closeable {
         int localInodeIndex = (inodeNumber - 1) % superblock.getInodesInGroup();
 
         // Calculate the inode starting position.
-        int inodePtr = inodeTablePtr * superblock.getFsBlockSize() + localInodeIndex * superblock.getInodeSize();
+        int inodePtr = inodeTablePtr * getBlockSize()
+                + localInodeIndex * superblock.getInodeSize();
 
         // Read the inode data from disk and construct the inode.
-        ByteBuffer buffer = getBytes(inodePtr, superblock.getInodeSize());
-        return new Inode(buffer);
+        byte[] inodeBytes = new byte[superblock.getInodeSize()];
+        seek(inodePtr);
+        read(inodeBytes);
+        return new Inode(this, inodeBytes);
     }
 
     /**
-     * Read a block of data from the disk.
-     * <p>
-     * {@link Superblock} <b>must</b> be read before use, as the block size
-     * value is required to calculate the block offset.
-     * <p>
-     * The bytes are read from the starting offset of the block, and includes
-     * the entire range of the block (see {@link Superblock#getFsBlockSize}).
-     *
-     * @param index the block index
-     * @return Returns a ByteBuffer backed by an array of bytes read from the
-     * disk.
+     * TODO(docs): write javadoc
      */
-    private ByteBuffer getBlock(int index) {
-        // Location of the block from the start of the disk.
-        final int offset = index * superblock.getFsBlockSize();
-
-        return getBytes(offset, superblock.getFsBlockSize());
-    }
-
-    /**
-     * Read a contiguous range of data from the disk.
-     * <p>
-     * The bytes are read from the provided starting offset, and includes the
-     * entire length of bytes.
-     *
-     * @param offset the offset from the beginning of the disk to read from
-     * @return Returns a ByteBuffer backed by an array of bytes read from the
-     * disk.
-     */
-    private ByteBuffer getBytes(int offset, int length) {
-        // Read the bytes from disk.
-        final byte[] bytes = readRange(offset, length);
-
-        // Construct ByteBuffer and set endianness to LITTLE_ENDIAN.
-        final ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-
-        return buffer;
-    }
-
-    /**
-     * Read an array of bytes from disk given an offset and a length.
-     *
-     * @param offset the offset from the beginning of the disk to read from
-     * @param length the number of bytes to read
-     * @return Returns a byte array containing the bytes read from the disk.
-     */
-    private byte[] readRange(int offset, int length) {
+    Inode navigate(String path) {
         /*
-         * Create a backing array for the data, size determined from the given
-         * length argument.
+         * Split the given filepath into "parts" where each part is a file or
+         * directory label in the tree. We follow the tree to find the Inode
+         * at the path.
          */
-        final byte[] bytes = new byte[length];
+        if (path.startsWith(Ext2File.pathSeparator))
+            path = path.substring(1);
+        final String[] parts = path.split(Ext2File.pathSeparator);
 
-        try {
-            // Seek to offset.
-            fsFile.seek(offset);
+        Inode inode = getInode(2);
 
-            // Read the data into the array.
-            fsFile.readFully(bytes);
-        } catch (IOException ignored) {
+        // If the path is empty then return the root inode.
+        if (path.length() == 0)
+            return inode;
+
+        /*
+         * Iterate over the parts of the path, retrieving the directory entries
+         * for the particular node if it is a directory.
+         *
+         * If a part of the path is not a directory, or the file does not exist
+         * at the end of the path, return null.
+         */
+        DirectoryEntry[] entries = inode.getEntries();
+        for (int i = 0; i < parts.length; i++) {
+            final String part = parts[i];
+
+            /*
+             * Iterate over the directory entries looking for the entry with
+             * same label as this part of the path.
+             */
+            DirectoryEntry entry = null;
+            for (DirectoryEntry anEntry : entries)
+                if (anEntry.getLabel().equals(part))
+                    entry = anEntry;
+            if (entry == null)
+                return null;
+
+            inode = getInode(entry.getInode());
+
+            if (i < parts.length - 1 && (inode.getFileMode() & FileModes.IFDIR) != FileModes.IFDIR)
+                /*
+                 * If this isn't the end of the path and the inode isn't a
+                 * directory, return null as the file can't exist.
+                 */
+                return null;
+            else if (i < parts.length - 1)
+                entries = inode.getEntries();
         }
 
-        return bytes;
+        /*
+         * If we reach this point, it means we found the Inode for the given
+         * path.
+         */
+        return inode;
     }
 
-    @Override
-    public void close() throws IOException {
-        fsFile.close();
+    void seek(long pos) {
+        try {
+            fsFile.seek(pos);
+        } catch (IOException e) {
+            System.err.println("An error occurred while seeking the disk.");
+            e.printStackTrace();
+        }
+    }
+
+    void read(byte[] dst) {
+        read(dst, 0, dst.length);
+    }
+
+    void read(byte[] dst, int offset, int length) {
+        try {
+            fsFile.read(dst, offset, length);
+        } catch (IOException e) {
+            System.err.println("An error occurred while reading from the disk.");
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -192,5 +221,10 @@ public class Volume implements Closeable {
      */
     public int getCapacity() {
         return getBlocks() * getBlockSize();
+    }
+
+    @Override
+    public void close() throws IOException {
+        fsFile.close();
     }
 }
