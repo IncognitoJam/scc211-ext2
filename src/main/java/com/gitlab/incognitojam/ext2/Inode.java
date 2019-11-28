@@ -164,10 +164,10 @@ public class Inode {
     private final int inodeNumber;
     private final short fileMode;
     private final short userId;
-    private final int lastAccessTime;
-    private final int creationTime;
-    private final int lastModifiedTime;
-    private final int deletedTime;
+    private final long lastAccessTime;
+    private final long creationTime;
+    private final long lastModifiedTime;
+    private final long deletedTime;
     private final short groupId;
     private final short hardLinksCount;
     private final int[] directPtrs;
@@ -371,28 +371,28 @@ public class Inode {
     /**
      * The last time this inode was accessed.
      */
-    public int getLastAccessTime() {
+    public long getLastAccessTime() {
         return lastAccessTime;
     }
 
     /**
      * The time when this inode was created.
      */
-    public int getCreationTime() {
+    public long getCreationTime() {
         return creationTime;
     }
 
     /**
      * The last time this inode was modified.
      */
-    public int getLastModifiedTime() {
+    public long getLastModifiedTime() {
         return lastModifiedTime;
     }
 
     /**
      * The time this inode was deleted.
      */
-    public int getDeletedTime() {
+    public long getDeletedTime() {
         return deletedTime;
     }
 
