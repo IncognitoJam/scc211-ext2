@@ -161,7 +161,7 @@ public class Inode {
         }
     }
 
-    private final int inodeNumber;
+    private final Volume volume;
     private final short fileMode;
     private final short userId;
     private final long lastAccessTime;
@@ -181,9 +181,8 @@ public class Inode {
      *
      * @param bytes the bytes to read attributes from
      */
-    Inode(byte[] bytes, int inodeNumber) {
-        this.inodeNumber = inodeNumber;
-
+    Inode(Volume volume, byte[] bytes) {
+        this.volume = volume;
         ByteBuffer buffer = ByteUtils.wrap(bytes);
 
         fileMode = buffer.getShort(0);
@@ -345,10 +344,6 @@ public class Inode {
 
         // if we get here, something has gone wrong
         throw new IllegalStateException("invalid inode data ptr");
-    }
-
-    public int getInodeNumber() {
-        return inodeNumber;
     }
 
     /**
