@@ -105,7 +105,7 @@ public class Inode {
          *
          * @param filemode the filemode value to parse
          * @return returns ASCII representation of the filemode value
-         * @see <a href="https://github.com/coreutils/gnulib/blob/master/lib/filemode.c#L96}">strmode in glibc.</a>
+         * @see <a href="https://github.com/coreutils/gnulib/blob/master/lib/filemode.c#L96">strmode in glibc.</a>
          */
         public static String toString(final int filemode) {
             final char[] str = new char[10];
