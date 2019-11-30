@@ -58,18 +58,23 @@ public class ByteUtils {
     private static final String COLOUR_RESET = "\033[0m"; // reset
 
     /**
-     * Present an array of bytes in a hexadecimal view, similar to the output
-     * of the hexdump command on Unix systems. The formatted data will be
-     * written to the console.
-     * <p>
-     * TODO: optionally, condense duplicate lines
-     *
-     * @param bytes       the byte array to format
-     * @param showAddress whether or not to show the address line numbers in
-     *                    the output
-     * @param showColours whether or not to format the output with colours
+     * TODO(docs): write javadoc
      */
-    public static void dumpHexBytes(byte[] bytes, boolean showAddress, boolean showColours) {
+    public static String formatHexBytes(byte[] data) {
+        return formatHexBytes(data, true);
+    }
+
+    /**
+     * TODO(docs): write javadoc
+     */
+    public static String formatHexBytes(byte[] data, boolean showAddress) {
+        return formatHexBytes(data, showAddress, true);
+    }
+
+    /**
+     * TODO(docs): write javadoc
+     */
+    public static String formatHexBytes(byte[] data, boolean showAddress, boolean showColours) {
         StringBuilder builder = new StringBuilder();
 
         /*
@@ -77,12 +82,12 @@ public class ByteUtils {
          * by two bytes with each pass.
          */
         int address = 0;
-        while (address < bytes.length) {
+        while (address < data.length) {
             /*
              * Read the current line from the byte array. We print two bytes at
              * a time.
              */
-            final byte[] line = Arrays.copyOfRange(bytes, address, address + 16);
+            final byte[] line = Arrays.copyOfRange(data, address, address + 16);
 
             /*
              * As we iterate over the bytes in this line, we need to build
@@ -94,7 +99,15 @@ public class ByteUtils {
             StringBuilder ascii = new StringBuilder();
 
             // Iterate over each byte in the line.
+            int i = address;
             for (final byte b : line) {
+                if (i >= data.length) {
+                    hex.append("   ");
+                    ascii.append(" ");
+                    i++;
+                    continue;
+                }
+
                 if (showColours) {
                     final String color = getByteColour(b);
                     hex.append(color);
@@ -118,6 +131,8 @@ public class ByteUtils {
                      * representation in Java.
                      */
                     ascii.append((char) b);
+
+                i++;
             }
 
             /*
@@ -134,14 +149,38 @@ public class ByteUtils {
             builder.append(' ');
             builder.append(ascii);
             if (showColours) builder.append(COLOUR_RESET);
-            builder.append('\n');
 
             // Finally, increment the position by two bytes.
             address += 16;
+            if (address < data.length) builder.append('\n');
         }
 
-        // Print the resulting string to the console.
-        System.out.println(builder);
+        return builder.toString();
+    }
+
+    public static void dumpHexBytes(byte[] data) {
+        dumpHexBytes(data, true);
+    }
+
+    public static void dumpHexBytes(byte[] data, boolean showAddress) {
+        dumpHexBytes(data, showAddress, true);
+    }
+
+    /**
+     * Present an array of bytes in a hexadecimal view, similar to the output
+     * of the hexdump command on Unix systems. The formatted data will be
+     * written to the console.
+     * <p>
+     * TODO: optionally, condense duplicate lines
+     *
+     * @param data        the byte array to format
+     * @param showAddress whether or not to show the address line numbers in
+     *                    the output
+     * @param showColours whether or not to format the output with colours
+     */
+    public static void dumpHexBytes(byte[] data, boolean showAddress, boolean showColours) {
+        String formattedBytes = formatHexBytes(data, showAddress, showColours);
+        System.out.println(formattedBytes);
     }
 
     /**
