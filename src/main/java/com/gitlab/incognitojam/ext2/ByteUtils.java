@@ -68,14 +68,21 @@ public class ByteUtils {
     /**
      * TODO(docs): write javadoc
      */
-    public static String formatHexBytes(byte[] data, boolean showAddress) {
-        return formatHexBytes(data, showAddress, true);
+    public static String formatHexBytes(byte[] data, boolean showColours) {
+        return formatHexBytes(data, showColours, true);
     }
 
     /**
      * TODO(docs): write javadoc
      */
-    public static String formatHexBytes(byte[] data, boolean showAddress, boolean showColours) {
+    public static String formatHexBytes(byte[] data, boolean showColours, boolean condenseDuplicates) {
+        return formatHexBytes(data, showColours, condenseDuplicates, true);
+    }
+
+    /**
+     * TODO(docs): write javadoc
+     */
+    public static String formatHexBytes(byte[] data, boolean showColours, boolean condenseDuplicates, boolean showAddress) {
         StringBuilder builder = new StringBuilder();
 
         /*
@@ -83,12 +90,27 @@ public class ByteUtils {
          * by two bytes with each pass.
          */
         int address = 0;
+        byte[] previousLine = null;
+        boolean condensed = false;
         while (address < data.length) {
             /*
              * Read the current line from the byte array. We print two bytes at
              * a time.
              */
             final byte[] line = Arrays.copyOfRange(data, address, address + 16);
+
+            // Replace duplicate lines with an asterisk character.
+            if (condenseDuplicates) {
+                if (Arrays.equals(previousLine, line) && address + 16 < data.length) {
+                    address += 16;
+                    if (!condensed) {
+                        condensed = true;
+                        builder.append("*\n");
+                    }
+                    continue;
+                }
+                previousLine = line;
+            }
 
             /*
              * As we iterate over the bytes in this line, we need to build
@@ -163,8 +185,12 @@ public class ByteUtils {
         dumpHexBytes(data, true);
     }
 
-    public static void dumpHexBytes(byte[] data, boolean showAddress) {
-        dumpHexBytes(data, showAddress, true);
+    public static void dumpHexBytes(byte[] data, boolean showColours) {
+        dumpHexBytes(data, showColours, true);
+    }
+
+    public static void dumpHexBytes(byte[] data, boolean showColours, boolean condenseDuplicates) {
+        dumpHexBytes(data, showColours, condenseDuplicates, true);
     }
 
     /**
@@ -174,13 +200,15 @@ public class ByteUtils {
      * <p>
      * TODO: optionally, condense duplicate lines
      *
-     * @param data        the byte array to format
-     * @param showAddress whether or not to show the address line numbers in
-     *                    the output
-     * @param showColours whether or not to format the output with colours
+     * @param data               the byte array to format
+     * @param showAddress        whether or not to show the address line numbers in
+     *                           the output
+     * @param condenseDuplicates whether or not to condense duplicate lines
+     *                           replacing them with an asterisk character
+     * @param showColours        whether or not to format the output with colours
      */
-    public static void dumpHexBytes(byte[] data, boolean showAddress, boolean showColours) {
-        String formattedBytes = formatHexBytes(data, showAddress, showColours);
+    public static void dumpHexBytes(byte[] data, boolean showColours, boolean condenseDuplicates, boolean showAddress) {
+        String formattedBytes = formatHexBytes(data, showColours, condenseDuplicates, showAddress);
         System.out.println(formattedBytes);
     }
 
