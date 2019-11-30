@@ -36,5 +36,18 @@ public class ByteUtilsTest {
         String test2Formatted = ByteUtils.formatHexBytes(test2, false, false, false);
         final String test2Expected = "48 65 6c 6c 6f 2c 20 77 6f 72 6c 64 21           Hello, world!   ";
         assertEquals(test2Expected, test2Formatted);
+
+        final byte[] test3 = new byte[] {
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        };
+        String test3Formatted = ByteUtils.formatHexBytes(test3, false, true, true);
+        final String test3Expected = "" +
+                "0000000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................\n" +
+                "*\n" +
+                "0000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00        ..............  ";
+        assertEquals(test3Expected, test3Formatted);
     }
 }
