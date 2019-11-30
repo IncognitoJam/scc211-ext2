@@ -28,12 +28,12 @@ public class ByteUtilsTest {
     @Test
     public void testFormatHexBytes() {
         final byte[] test1 = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
-        String test1Formatted = ByteUtils.formatHexBytes(test1, true, false);
+        String test1Formatted = ByteUtils.formatHexBytes(test1, false);
         final String test1Expected = "0000000: 00 00 00 00 00 00 00 00 00 00                    ..........      ";
         assertEquals(test1Expected, test1Formatted);
 
         final byte[] test2 = "Hello, world!".getBytes();
-        String test2Formatted = ByteUtils.formatHexBytes(test2, false, false);
+        String test2Formatted = ByteUtils.formatHexBytes(test2, false, false, false);
         final String test2Expected = "48 65 6c 6c 6f 2c 20 77 6f 72 6c 64 21           Hello, world!   ";
         assertEquals(test2Expected, test2Formatted);
     }
