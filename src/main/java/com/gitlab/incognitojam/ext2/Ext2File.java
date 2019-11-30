@@ -48,6 +48,13 @@ public class Ext2File {
     /**
      * TODO(docs): write javadoc
      */
+    public boolean isRegularFile() {
+        return FileModes.testBitmask(getFileMode(), FileModes.IFREG);
+    }
+
+    /**
+     * TODO(docs): write javadoc
+     */
     public List<DirectoryEntry> getEntries() {
         if (!isDirectory())
             throw new UnsupportedOperationException("Must only call Ext2File#getEntries() on directory files.");
@@ -82,7 +89,10 @@ public class Ext2File {
      * TODO(docs): write javadoc
      */
     public String getFileName() {
-        return Path.of(filePath).getFileName().toString();
+        Path fileName = Path.of(filePath).getFileName();
+        if (fileName == null)
+            return "/";
+        return fileName.toString();
     }
 
     /**
