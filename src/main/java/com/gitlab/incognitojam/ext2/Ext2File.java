@@ -116,6 +116,8 @@ public class Ext2File {
      * TODO(docs): write javadoc
      */
     public byte[] read(long startByte, long length) {
+        if (length < 0)
+            throw new IllegalArgumentException("Cannot retrieve byte array of length less than zero");
         if (length > Integer.MAX_VALUE)
             throw new IllegalArgumentException("Cannot retrieve byte array of length greater than Integer.MAX_VALUE");
 
