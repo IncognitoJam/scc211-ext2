@@ -118,10 +118,13 @@ public class Ext2File {
     public byte[] read(long startByte, long length) {
         if (length < 0)
             throw new IllegalArgumentException("Cannot retrieve byte array of length less than zero");
-        if (length > Integer.MAX_VALUE)
-            throw new IllegalArgumentException("Cannot retrieve byte array of length greater than Integer.MAX_VALUE");
+        if (length >= Integer.MAX_VALUE)
+            throw new IllegalArgumentException("Cannot retrieve byte array of length greater than or equal to Integer.MAX_VALUE");
 
         position = startByte + length;
+        if (position >= getSize())
+            throw new IndexOutOfBoundsException("Cannot read beyond the bounds of the file");
+
         return inode.read(startByte, (int) length);
     }
 

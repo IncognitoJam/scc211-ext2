@@ -12,15 +12,16 @@ import static com.gitlab.incognitojam.ext2.Inode.FileModes.*;
 public class Ext2FileTest {
     private static final String volumeFilename = "ext2fs";
     private static Volume volume;
+    private static Ext2File root;
 
     @BeforeClass
     public static void setUp() throws IOException {
         volume = new Volume(volumeFilename);
+        root = new Ext2File(volume, "/");
     }
 
     @Test
     public void testRootFile() throws FileNotFoundException {
-        Ext2File root = new Ext2File(volume, "/");
         assertEquals("/", root.getFileName());
         assertEquals("/", root.getFilePath());
 
@@ -38,5 +39,20 @@ public class Ext2FileTest {
 
         assertEquals(0, root.getUnixUid());
         assertEquals(0, root.getUnixGid());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testReadLongLength() {
+        root.read(0L, (long) Integer.MAX_VALUE + 1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testReadNegativeLength() {
+        root.read(0L, -1L);
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testReadBeyondFile() {
+        root.read(root.getSize(), 1L);
     }
 }
