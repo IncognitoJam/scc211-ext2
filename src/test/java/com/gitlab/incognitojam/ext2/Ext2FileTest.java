@@ -21,7 +21,7 @@ public class Ext2FileTest {
     }
 
     @Test
-    public void testRootFile() throws FileNotFoundException {
+    public void testRootFile() {
         assertEquals("/", root.getFileName());
         assertEquals("/", root.getFilePath());
 
@@ -54,5 +54,15 @@ public class Ext2FileTest {
     @Test(expected = IndexOutOfBoundsException.class)
     public void testReadBeyondFile() {
         root.read(root.getSize(), 1L);
+    }
+
+    @Test
+    public void testSeekBeyondFile() {
+        /*
+         * This call should not throw an exception, since seeking beyond the
+         * bounds of the file is valid. This would happen when creating a hole
+         * in the file, if writing was supported.
+         */
+        root.seek(root.getSize() + 1024L);
     }
 }
