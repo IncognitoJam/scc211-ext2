@@ -215,6 +215,13 @@ public class Inode {
      */
     byte[] read(long startOffset, int length) {
         /*
+         * Since it is not possible to read beyond the end of the file,
+         * transform the request to reduce the length of bytes read.
+         */
+        if (startOffset + length > getFileSize())
+            length = (int) (getFileSize() - startOffset);
+
+        /*
          * Calculate the local block number and starting byte for the data we
          * we want to read inside this file.
          *
