@@ -99,4 +99,18 @@ public class Superblock {
     public String getVolumeLabel() {
         return volumeLabel;
     }
+
+    @Override
+    public String toString() {
+        return "Superblock{" +
+                "inodesCount=" + inodesCount +
+                ", blocksCount=" + blocksCount +
+                ", fsBlockSize=" + fsBlockSize +
+                ", blocksInGroup=" + blocksInGroup +
+                ", inodesInGroup=" + inodesInGroup +
+                ", magic=" + magic +
+                ", inodeSize=" + inodeSize +
+                ", volumeLabel='" + volumeLabel + '\'' +
+                '}';
+    }
 }

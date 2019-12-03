@@ -236,4 +236,13 @@ public class Volume implements Closeable {
     public void close() throws IOException {
         fsFile.close();
     }
+
+    @Override
+    public String toString() {
+        return "Volume{" +
+                "fsFile=" + fsFile +
+                ", superblock=" + superblock +
+                ", blockGroupDescriptors=" + Arrays.toString(blockGroupDescriptors) +
+                '}';
+    }
 }

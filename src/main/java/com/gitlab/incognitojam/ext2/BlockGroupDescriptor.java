@@ -68,4 +68,16 @@ public class BlockGroupDescriptor {
     public short getDirectoriesCount() {
         return directoriesCount;
     }
+
+    @Override
+    public String toString() {
+        return "BlockGroupDescriptor{" +
+                "blockBitmapPtr=" + blockBitmapPtr +
+                ", inodeBitmapPtr=" + inodeBitmapPtr +
+                ", inodeTablePtr=" + inodeTablePtr +
+                ", freeBlockCount=" + freeBlockCount +
+                ", freeInodeCount=" + freeInodeCount +
+                ", directoriesCount=" + directoriesCount +
+                '}';
+    }
 }

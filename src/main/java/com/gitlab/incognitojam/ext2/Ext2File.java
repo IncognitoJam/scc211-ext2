@@ -197,4 +197,14 @@ public class Ext2File {
     public short getHardLinksCount() {
         return inode.getHardLinksCount();
     }
+
+    @Override
+    public String toString() {
+        return "Ext2File{" +
+                "volume=" + volume +
+                ", filePath='" + filePath + '\'' +
+                ", inode=" + inode +
+                ", position=" + position +
+                '}';
+    }
 }

@@ -484,4 +484,24 @@ public class Inode {
     public long getFileSize() {
         return fileSize;
     }
+
+    @Override
+    public String toString() {
+        return "Inode{" +
+                "volume=" + volume +
+                ", fileMode=" + fileMode +
+                ", userId=" + userId +
+                ", lastAccessTime=" + lastAccessTime +
+                ", creationTime=" + creationTime +
+                ", lastModifiedTime=" + lastModifiedTime +
+                ", deletedTime=" + deletedTime +
+                ", groupId=" + groupId +
+                ", hardLinksCount=" + hardLinksCount +
+                ", directPtrs=" + Arrays.toString(directPtrs) +
+                ", indirectPtr=" + indirectPtr +
+                ", doubleIndirectPtr=" + doubleIndirectPtr +
+                ", tripleIndirectPtr=" + tripleIndirectPtr +
+                ", fileSize=" + fileSize +
+                '}';
+    }
 }

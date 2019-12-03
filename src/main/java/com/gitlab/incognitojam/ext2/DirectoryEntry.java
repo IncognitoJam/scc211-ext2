@@ -64,4 +64,14 @@ public class DirectoryEntry {
     public String getLabel() {
         return label;
     }
+
+    @Override
+    public String toString() {
+        return "DirectoryEntry{" +
+                "inode=" + inode +
+                ", length=" + length +
+                ", fileType=" + fileType +
+                ", label='" + label + '\'' +
+                '}';
+    }
 }
