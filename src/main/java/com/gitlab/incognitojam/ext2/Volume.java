@@ -5,10 +5,8 @@ import com.gitlab.incognitojam.ext2.Inode.FileModes;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * TODO(docs): write javadoc
@@ -129,7 +127,7 @@ public class Volume implements Closeable {
          * If a part of the path is not a directory, or the file does not exist
          * at the end of the path, return null.
          */
-        DirectoryEntry[] entries = inode.getEntries();
+        List<DirectoryEntry> entries = inode.getEntries();
         for (int i = 0; i < parts.length; i++) {
             final String part = parts[i];
 
