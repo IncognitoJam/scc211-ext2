@@ -26,7 +26,9 @@ public class Volume implements Closeable {
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Read the second block on disk and construct a new {@link Superblock}.
+     *
+     * @see Superblock
      */
     private Superblock readSuperblock() {
         // Superblock starts at byte 1024 so we skip the first 1024 bytes.
@@ -41,7 +43,10 @@ public class Volume implements Closeable {
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Read the third block on disk and construct the {@link BlockGroupDescriptor}
+     * table.
+     *
+     * @see BlockGroupDescriptor
      */
     private BlockGroupDescriptor[] readBlockGroupDescriptorTable() {
         // FIXME: the index might be different for other block sizes
@@ -66,13 +71,15 @@ public class Volume implements Closeable {
     }
 
     /**
-     * Read an inode from disk by its number.
+     * Locates and reads an Inode on disk from its number.
      * <p>
      * Calculates the block group containing the inode, finds it's inode table
-     * and reads the required bytes to construct an inode struct.
+     * position and reads the required bytes to construct an {@link Inode}
+     * object.
      *
-     * @param inodeNumber the inode number
-     * @return returns the inode from disk
+     * @param inodeNumber The inode number to access.
+     * @return Returns the newly constructed Inode retrieved from disk.
+     * @see Inode
      */
     Inode getInode(int inodeNumber) {
         /*
@@ -102,30 +109,31 @@ public class Volume implements Closeable {
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Navigate the directory structure on disk to find the Inode represented
+     * by a given file path.
      */
-    Inode navigate(String path) {
+    Inode navigate(String filePath) {
         /*
          * Split the given filepath into "parts" where each part is a file or
          * directory label in the tree. We follow the tree to find the Inode
-         * at the path.
+         * at the file path.
          */
-        if (path.startsWith(Ext2File.pathSeparator))
-            path = path.substring(1);
-        final String[] parts = path.split(Ext2File.pathSeparator);
+        if (filePath.startsWith(Ext2File.pathSeparator))
+            filePath = filePath.substring(1);
+        final String[] parts = filePath.split(Ext2File.pathSeparator);
 
         Inode inode = getInode(2);
 
-        // If the path is empty then return the root inode.
-        if (path.length() == 0)
+        // If the file path is empty then return the root inode.
+        if (filePath.length() == 0)
             return inode;
 
         /*
-         * Iterate over the parts of the path, retrieving the directory entries
-         * for the particular node if it is a directory.
+         * Iterate over the parts of the file path, retrieving the directory
+         * entries for the particular node if it is a directory.
          *
-         * If a part of the path is not a directory, or the file does not exist
-         * at the end of the path, return null.
+         * If a part of the file path is not a directory, or the file does not
+         * exist at the end of the file path, return null.
          */
         List<DirectoryEntry> entries = inode.getEntries();
         for (int i = 0; i < parts.length; i++) {
@@ -133,7 +141,7 @@ public class Volume implements Closeable {
 
             /*
              * Iterate over the directory entries looking for the entry with
-             * same label as this part of the path.
+             * same label as this part of the file path.
              */
             DirectoryEntry entry = null;
             for (DirectoryEntry anEntry : entries)
@@ -146,7 +154,7 @@ public class Volume implements Closeable {
 
             if (i < parts.length - 1 && (inode.getFileMode() & FileModes.IFDIR) != FileModes.IFDIR)
                 /*
-                 * If this isn't the end of the path and the inode isn't a
+                 * If this isn't the end of the filePath and the inode isn't a
                  * directory, return null as the file can't exist.
                  */
                 return null;
@@ -156,17 +164,21 @@ public class Volume implements Closeable {
 
         /*
          * If we reach this point, it means we found the Inode for the given
-         * path.
+         * file path.
          */
         return inode;
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Move the file-pointer offset to the given position.
+     * <p>
+     * This method is used to alter where future read operations take place.
+     *
+     * @param position The position to move the file-pointer offset to, in bytes.
      */
-    void seek(long pos) {
+    void seek(long position) {
         try {
-            fsFile.seek(pos);
+            fsFile.seek(position);
         } catch (IOException e) {
             System.err.println("An error occurred while seeking the disk.");
             e.printStackTrace();
@@ -174,14 +186,26 @@ public class Volume implements Closeable {
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Read a range of bytes from disk into the given array.
+     * <p>
+     * This operation begins reading from the disk at the location set by {@link #seek(long)}
+     * and reads <pre>dst.length</pre> bytes.
+     *
+     * @param dst The array to read the bytes into.
+     * @see #seek(long)
      */
     void read(byte[] dst) {
         read(dst, 0, dst.length);
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Read a requested length of bytes from disk into the given array, at a
+     * particular offset.
+     * <p>
+     * This operation begins reading from the disk at the location set by {@link #seek(long)}
+     * and reads <pre>length</pre> bytes into the array starting at <pre>offset</pre>.
+     *
+     * @param offset
      */
     void read(byte[] dst, int offset, int length) {
         try {
@@ -217,6 +241,16 @@ public class Volume implements Closeable {
      */
     public int getBlockSize() {
         return superblock.getFsBlockSize();
+    }
+
+    /**
+     * The Ext2 signature (0xEF53) used to confirm the presence of an Ext2
+     * filesystem on a volume.
+     *
+     * @see Superblock#getMagic()
+     */
+    public short getMagicValue() {
+        return superblock.getMagic();
     }
 
     /**

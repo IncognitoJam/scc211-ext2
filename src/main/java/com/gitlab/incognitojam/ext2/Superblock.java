@@ -19,7 +19,7 @@ public class Superblock {
     /**
      * Read new superblock table from a byte buffer.
      *
-     * @param bytes the byte array to read the table from
+     * @param bytes The byte array to read the table from.
      */
     Superblock(byte[] bytes) {
         ByteBuffer buffer = ByteUtils.wrap(bytes);

@@ -166,43 +166,44 @@ public class Ext2File {
     }
 
     /**
-     * @return Returns the size of this file in bytes.
+     * The size of this file in bytes.
      */
     public long getSize() {
         return inode.getFileSize();
     }
 
     /**
-     * @return Returns the UNIX timestamp for when this file was created.
+     * The UNIX timestamp for when this file was created.
      */
     public long getCreationTime() {
         return inode.getCreationTime();
     }
 
     /**
-     * @return Returns the UNIX timestamp for when this file was last accessed.
+     * The UNIX timestamp for when this file was last accessed.
      */
     public long getLastAccessTime() {
         return inode.getLastAccessTime();
     }
 
     /**
-     * @return Returns the UNIX timestamp for when this file was last modified.
+     * The UNIX timestamp for when this file was last modified.
      */
     public long getLastModifiedTime() {
         return inode.getLastModifiedTime();
     }
 
     /**
-     * @return Returns the UNIX timestamp for when this file was deleted. This
-     * value is 0 if the file has not been deleted.
+     * The UNIX timestamp for when this file was deleted. This value is 0 if
+     * the file has not been deleted.
      */
     public long getDeletedTime() {
         return inode.getDeletedTime();
     }
 
     /**
-     * @return Returns the filemode bits for this file.
+     * The filemode bits for this file.
+     *
      * @see Inode.FileModes
      */
     public short getFileMode() {
@@ -210,21 +211,21 @@ public class Ext2File {
     }
 
     /**
-     * @return Returns the UNIX user id who owns this file.
+     * The UNIX user id who owns this file.
      */
     public short getUnixUid() {
         return inode.getUserId();
     }
 
     /**
-     * @return Returns the UNIX group id who owns this file.
+     * The UNIX group id who owns this file.
      */
     public short getUnixGid() {
         return inode.getGroupId();
     }
 
     /**
-     * @return Returns the number of hard links to this file on the filesystem.
+     * The number of hard links to this file on the filesystem.
      */
     public short getHardLinksCount() {
         return inode.getHardLinksCount();
