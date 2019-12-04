@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.gitlab.incognitojam.ext2.Inode.FileModes.*;
@@ -44,12 +45,12 @@ public class InodeTest {
         assertEquals("hard links count", 6, root.getHardLinksCount());
         assertEquals("file size", 1024, root.getFileSize());
 
-        DirectoryEntry[] entries = root.getEntries();
+        List<DirectoryEntry> entries = root.getEntries();
         assertNotNull(entries);
-        assertEquals("entries length", 7, entries.length);
+        assertEquals("entries length", 7, entries.size());
 
-        final String[] expectedEntriesLabels = new String[] { ".", "..", "lost+found", "files", "big-dir", "two-cities", "deep" };
-        String[] entriesLabels = Arrays.stream(entries).map(DirectoryEntry::getLabel).collect(Collectors.toList()).toArray(new String[]{});
-        assertArrayEquals("entries labels", expectedEntriesLabels, entriesLabels);
+        final List<String> expectedEntriesLabels = Arrays.asList(".", "..", "lost+found", "files", "big-dir", "two-cities", "deep");
+        List<String> entriesLabels = entries.stream().map(DirectoryEntry::getLabel).collect(Collectors.toList());
+        assertEquals("entries labels", expectedEntriesLabels, entriesLabels);
     }
 }
