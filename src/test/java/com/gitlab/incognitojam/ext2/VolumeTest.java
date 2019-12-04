@@ -30,4 +30,9 @@ public class VolumeTest {
     public void testVolumeReadsBlockSize() {
         assertEquals(1024, volume.getBlockSize());
     }
+
+    @Test
+    public void testVolumeMagicValue() {
+        assertEquals((short) 0xEF53, volume.getMagicValue());
+    }
 }
