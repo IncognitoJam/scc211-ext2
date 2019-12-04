@@ -3,13 +3,13 @@ package com.gitlab.incognitojam.ext2;
 import com.gitlab.incognitojam.ext2.Inode.FileModes;
 
 import java.io.FileNotFoundException;
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
- * TODO(docs): write javadoc
+ * Ext2File represents a file within the Ext2 filesystem and holds a reference
+ * to the relevant {@link Inode} object within a given {@link Volume}.
  */
 public class Ext2File {
     public static final String pathSeparator = "/";
@@ -20,7 +20,11 @@ public class Ext2File {
     private long position;
 
     /**
-     * TODO(docs): write javadoc
+     * Construct a new Ext2File within the filesystem using an absolute path.
+     *
+     * @param volume   The volume in which this file exists.
+     * @param filePath The path to access this resource from within the
+     *                 filesystem. Supports relative path modifiers.
      */
     public Ext2File(Volume volume, String filePath) throws FileNotFoundException {
         this.volume = volume;
@@ -32,61 +36,76 @@ public class Ext2File {
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Construct a new Ext2File within the filesystem using a relative path,
+     * having provided a reference to the parent directory and a child path.
+     *
+     * @param parent The parent directory to find the file in.
+     * @param child  The child file to access.
      */
     public Ext2File(Ext2File parent, String child) throws FileNotFoundException {
         this(parent.volume, Path.of(parent.filePath, child).normalize().toString());
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns whether or not this Ext2File represents a directory.
      */
     public boolean isDirectory() {
         return FileModes.testBitmask(getFileMode(), FileModes.IFDIR);
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns whether or not this Ext2File represents a regular file.
      */
     public boolean isRegularFile() {
         return FileModes.testBitmask(getFileMode(), FileModes.IFREG);
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the list of {@link DirectoryEntry}s for this file.
+     * @throws UnsupportedOperationException Throws an exception if this file is not a directory.
+     * @see #isDirectory()
      */
     public List<DirectoryEntry> getEntries() {
-        if (!isDirectory())
-            throw new UnsupportedOperationException("Must only call Ext2File#getEntries() on directory files.");
-
-        byte[] dataBytes = inode.read(0, (int) inode.getFileSize());
-        ByteBuffer data = ByteUtils.wrap(dataBytes);
-
-        List<DirectoryEntry> entries = new ArrayList<>();
-        int ptr = 0;
-        while (ptr < dataBytes.length) {
-            data.position(ptr);
-            DirectoryEntry entry = new DirectoryEntry(data);
-
-            // Skip entries which don't point to a valid inode
-            if (entry.getInode() > 0)
-                entries.add(entry);
-
-            ptr += entry.getLength();
-        }
-
-        return entries;
+        return inode.getEntries();
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Output the directory entries for this file in a Unix format to the
+     * system console.
+     */
+    public void printEntries() {
+        // Iterate over the directory entries.
+        for (DirectoryEntry entry : getEntries()) {
+            Ext2File file;
+            try {
+                file = new Ext2File(this, entry.getLabel());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                continue;
+            }
+
+            System.out.printf(
+                    "%s %d %4d %4d %6s %s %s\n",
+                    FileModes.toString(file.getFileMode()),
+                    file.getHardLinksCount(),
+                    file.getUnixUid(),
+                    file.getUnixGid(),
+                    ByteUtils.formatHumanReadable(file.getSize()),
+                    DateUtils.formatDirectoryListingDate(new Date(file.getLastModifiedTime() * 1000)),
+                    entry.getLabel()
+            );
+        }
+    }
+
+    /**
+     * @return Returns this Ext2File's file path in the filesystem.
      */
     public String getFilePath() {
         return filePath;
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the name of this file.
      */
     public String getFileName() {
         Path fileName = Path.of(filePath).getFileName();
@@ -96,14 +115,14 @@ public class Ext2File {
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the current seek position in the file.
      */
     public long getPosition() {
         return position;
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Change the pointer position for reading from this file.
      */
     public void seek(long position) {
         if (position < 0)
@@ -113,7 +132,12 @@ public class Ext2File {
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Read an array of bytes from the file at a specific offset.
+     *
+     * @param startByte the starting offset in the file to read the bytes from
+     * @param length    the number of bytes to read
+     * @return Returns an array of bytes.
+     * @see Ext2File#read(long)
      */
     public byte[] read(long startByte, long length) {
         if (length < 0)
@@ -129,70 +153,78 @@ public class Ext2File {
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Read an array of bytes from the file.
+     * <p>
+     * This method starts reading from the current seek position.
+     *
+     * @param length the number of bytes to read
+     * @return Returns an array of bytes.
+     * @see Ext2File#read(long, long)
      */
     public byte[] read(long length) {
         return read(position, length);
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the size of this file in bytes.
      */
     public long getSize() {
         return inode.getFileSize();
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the UNIX timestamp for when this file was created.
      */
     public long getCreationTime() {
         return inode.getCreationTime();
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the UNIX timestamp for when this file was last accessed.
      */
     public long getLastAccessTime() {
         return inode.getLastAccessTime();
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the UNIX timestamp for when this file was last modified.
      */
     public long getLastModifiedTime() {
         return inode.getLastModifiedTime();
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the UNIX timestamp for when this file was deleted. This
+     * value is 0 if the file has not been deleted.
      */
     public long getDeletedTime() {
         return inode.getDeletedTime();
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the filemode bits for this file.
+     * @see Inode.FileModes
      */
     public short getFileMode() {
         return inode.getFileMode();
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the UNIX user id who owns this file.
      */
     public short getUnixUid() {
         return inode.getUserId();
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the UNIX group id who owns this file.
      */
     public short getUnixGid() {
         return inode.getGroupId();
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the number of hard links to this file on the filesystem.
      */
     public short getHardLinksCount() {
         return inode.getHardLinksCount();
