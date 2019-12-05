@@ -20,9 +20,9 @@ public class Volume implements Closeable {
      * TODO(docs): write javadoc
      */
     public Volume(String filepath) throws IOException {
-        this.fsFile = new RandomAccessFile(filepath, "r");
-        this.superblock = readSuperblock();
-        this.blockGroupDescriptors = readBlockGroupDescriptorTable();
+        fsFile = new RandomAccessFile(filepath, "r");
+        superblock = readSuperblock();
+        blockGroupDescriptors = readBlockGroupDescriptorTable();
     }
 
     /**
