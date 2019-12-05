@@ -61,8 +61,7 @@ public class Volume implements Closeable {
         BlockGroupDescriptor[] bgdTable = new BlockGroupDescriptor[blockGroupCount];
         for (int i = 0; i < blockGroupCount; i++) {
             byte[] bgdBytes = new byte[bgdLength];
-            int ptr = bgdTableBlockPtr + i * bgdLength;
-            seek(ptr);
+            seek(bgdTableBlockPtr + i * bgdLength);
             read(bgdBytes);
             bgdTable[i] = new BlockGroupDescriptor(bgdBytes);
         }
@@ -205,7 +204,9 @@ public class Volume implements Closeable {
      * This operation begins reading from the disk at the location set by {@link #seek(long)}
      * and reads <pre>length</pre> bytes into the array starting at <pre>offset</pre>.
      *
-     * @param offset
+     * @param dst    The array to read the bytes into.
+     * @param offset The position in the destination array to start writing at.
+     * @param length The number of bytes to read into the destination array.
      */
     void read(byte[] dst, int offset, int length) {
         try {
