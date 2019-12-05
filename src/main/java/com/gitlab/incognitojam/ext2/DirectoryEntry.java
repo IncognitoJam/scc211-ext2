@@ -6,6 +6,21 @@ import java.nio.ByteBuffer;
  * TODO(docs): write javadoc
  */
 public class DirectoryEntry {
+    /**
+     * TODO(docs): write javadoc
+     * @see <a href="https://wiki.osdev.org/Ext2#Directory_Entry_Type_Indicators"/>
+     */
+    public static class FileTypes {
+        public static final short UNKNOWN = 0;
+        public static final short REGULAR_FILE = 1;
+        public static final short DIRECTORY = 2;
+        public static final short CHARACTER_DEVICE = 3;
+        public static final short BLOCK_DEVICE = 4;
+        public static final short FIFO = 5;
+        public static final short SOCKET = 6;
+        public static final short SYMBOLIC_LINK = 7;
+    }
+
     private final int inode;
     private final short length;
     private final byte fileType;
@@ -51,6 +66,7 @@ public class DirectoryEntry {
      * TODO: write explanation
      *
      * @return returns the file type identifier
+     * @see DirectoryEntry.FileTypes
      */
     public byte getFileType() {
         return fileType;
