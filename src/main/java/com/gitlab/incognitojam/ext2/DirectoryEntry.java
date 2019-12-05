@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 public class DirectoryEntry {
     /**
      * TODO(docs): write javadoc
-     * @see <a href="https://wiki.osdev.org/Ext2#Directory_Entry_Type_Indicators"/>
+     * @see <a href="https://wiki.osdev.org/Ext2#Directory_Entry_Type_Indicators"></a>
      */
     public static class FileTypes {
         public static final short UNKNOWN = 0;
