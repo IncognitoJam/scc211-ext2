@@ -25,12 +25,7 @@ public class Superblock {
         ByteBuffer buffer = ByteUtils.wrap(bytes);
         inodesCount = buffer.getInt(0);
         blocksCount = buffer.getInt(4);
-
-        // NOTE: filesystem image is corrupt, block size is zero
-        // Assume block size is 1024
-        int fsBlockSize = buffer.getInt(24);
-        this.fsBlockSize = fsBlockSize == 0 ? 1024 : fsBlockSize;
-
+        fsBlockSize = 1024 * (int) Math.pow(2, buffer.getInt(24));
         blocksInGroup = buffer.getInt(32);
         inodesInGroup = buffer.getInt(40);
         magic = buffer.getShort(56);
