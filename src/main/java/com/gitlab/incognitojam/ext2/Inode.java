@@ -132,11 +132,12 @@ public class Inode {
         }
 
         /**
-         * Get a character indicating the type of file descriped by the
+         * Get a character indicating the type of file described by the
          * filemode bits.
          *
          * @param filemode the filemode to parse
          * @return returns the character matching the file type
+         * @see #parseFileTypeHumanReadable(int) for human readable format
          */
         private static char parseFileType(final int filemode) {
             if (testBitmask(filemode, IFREG))
@@ -156,6 +157,34 @@ public class Inode {
 
             // none of the tests matched, we don't know what the type is
             return '?';
+        }
+
+        /**
+         * Get a string indicating the type of file described by the
+         * filemode bits.
+         *
+         * @param filemode the filemode to parse
+         * @return returns a string describing the file type
+         * @see #parseFileType(int) for non human readable format
+         */
+        public static String parseFileTypeHumanReadable(final int filemode) {
+            if (testBitmask(filemode, IFREG))
+                return "Regular file";
+            if (testBitmask(filemode, IFDIR))
+                return "Directory";
+            if (testBitmask(filemode, IFBLK))
+                return "Block device";
+            if (testBitmask(filemode, IFCHR))
+                return "Character device";
+            if (testBitmask(filemode, IFLNK))
+                return "Symbolic link";
+            if (testBitmask(filemode, IFIFO))
+                return "FIFO";
+            if (testBitmask(filemode, IFSCK))
+                return "Unix socket";
+
+            // none of the tests matched, we don't know what the type is
+            return "Unknown";
         }
 
         public static boolean testBitmask(final int bits, final int mask) {
@@ -348,7 +377,7 @@ public class Inode {
      * data block 12 which is located in the first indirect data block at
      * position 0.
      * <p>
-     * Which each added level of indirection, more data blocks must be read
+     * With each added level of indirection, more data blocks must be read
      * at a particular offset to retrieve the real data block pointer. This
      * method is used to perform this traversal of the tree.
      * <p>
