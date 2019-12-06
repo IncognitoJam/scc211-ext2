@@ -43,14 +43,16 @@ class HexViewer extends JFrame {
         statusPanel.add(statusLabel);
 
         // create the text area contents
-        final byte[] data = file.read(0L, file.getSize());
-        final String hexDump = ByteUtils.formatHexBytes(data);
-
         ColourTextPane textPane = new ColourTextPane();
         textPane.setEditable(false);
         textPane.setFont(new Font("Noto Mono", Font.PLAIN, 11));
         pane.add(new JScrollPane(textPane), BorderLayout.CENTER);
-        textPane.addMessage(hexDump);
+
+        if (file.getSize() < Integer.MAX_VALUE) {
+            final byte[] data = file.read(0L, file.getSize());
+            final String hexDump = ByteUtils.formatHexBytes(data);
+            textPane.addMessage(hexDump);
+        } else textPane.addMessage("File too large to produce hexdump.");
 
         setVisible(true);
     }
