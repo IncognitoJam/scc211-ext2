@@ -17,7 +17,7 @@ public class Superblock {
     private final String volumeLabel;
 
     /**
-     * Read new superblock table from a byte buffer.
+     * Read new superblock table from an array of bytes.
      *
      * @param bytes The byte array to read the table from.
      */

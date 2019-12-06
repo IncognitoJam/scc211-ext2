@@ -15,7 +15,7 @@ public class BlockGroupDescriptor {
     private final short directoriesCount;
 
     /**
-     * TODO(docs): write javadoc
+     * Construct a new {@link BlockGroupDescriptor} from an array of bytes.
      */
     BlockGroupDescriptor(byte[] bytes) {
         ByteBuffer buffer = ByteUtils.wrap(bytes);

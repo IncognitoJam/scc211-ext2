@@ -3,13 +3,27 @@ package com.gitlab.incognitojam.ext2;
 import com.gitlab.incognitojam.ext2.Inode.FileModes;
 
 import java.io.Closeable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * TODO(docs): write javadoc
+ * Volume represents the disk image that the EXT2 filesystem is stored within.
+ * <p>
+ * It can be used with {@link Ext2File} to query files on the disk and read the
+ * bytes within them, as well as view information such as the volume's {@link #getLabel()}
+ * and properties like {@link #getBlockSize()} and {@link #getCapacity()}.
+ * <p>
+ * <blockquote><pre>
+ * try (final Volume volume = new Volume("ext2fs")) {
+ *     Ext2File file = new Ext2File("/two-cities");
+ *     Helper.dumpHexBytes(file.read(file.getSize())); // prints the contents of "/two-cities"
+ * } catch (FileNotFoundException e) {
+ *     e.printStackTrace();
+ * }
+ * </pre></blockquote>
  */
 public class Volume implements Closeable {
     private final RandomAccessFile fsFile;
@@ -17,9 +31,12 @@ public class Volume implements Closeable {
     private final BlockGroupDescriptor[] blockGroupDescriptors;
 
     /**
-     * TODO(docs): write javadoc
+     * Open the Volume contained in the given file.
+     *
+     * @param filepath The file on the host system to read the filesystem data
+     *                 from.
      */
-    public Volume(String filepath) throws IOException {
+    public Volume(String filepath) throws FileNotFoundException {
         fsFile = new RandomAccessFile(filepath, "r");
         superblock = readSuperblock();
         blockGroupDescriptors = readBlockGroupDescriptorTable();
@@ -49,7 +66,6 @@ public class Volume implements Closeable {
      * @see BlockGroupDescriptor
      */
     private BlockGroupDescriptor[] readBlockGroupDescriptorTable() {
-        // FIXME: the index might be different for other block sizes
         final int bgdLength = 32;
         final int bgdTableBlockPtr = 2 * getBlockSize();
 

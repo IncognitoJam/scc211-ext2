@@ -6,8 +6,6 @@ import java.util.Arrays;
 
 /**
  * Utility methods relating to bytes.
- * <p>
- * TODO: improve documentation
  */
 public class ByteUtils {
     /**
@@ -22,8 +20,8 @@ public class ByteUtils {
      * bytesLabel.equals("976.6 KiB"); // true
      * </pre></blockquote>
      *
-     * @param bytes the value of bytes to format
-     * @return returns formatted string with correct suffix
+     * @param bytes The value of bytes to format.
+     * @return Returns a formatted string with correct suffix.
      */
     public static String formatHumanReadable(long bytes) {
         final int unit = 1024;
@@ -59,28 +57,64 @@ public class ByteUtils {
     private static final String COLOUR_RESET = "\033[0m"; // reset
 
     /**
-     * TODO(docs): write javadoc
+     * Present an array of bytes in a hexadecimal view, similar to the output
+     * of the hexdump command on Unix systems. The formatted data will be
+     * returned as a string.
+     *
+     * @param data The array of bytes to format.
+     * @return Returns the formatted string.
+     * @see #formatHexBytes(byte[], boolean, boolean, boolean)
      */
     public static String formatHexBytes(byte[] data) {
         return formatHexBytes(data, true);
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Present an array of bytes in a hexadecimal view, similar to the output
+     * of the hexdump command on Unix systems. The formatted data will be
+     * returned as a string.
+     *
+     * @param data        The array of bytes to format.
+     * @param showColours Whether or not the output should include ANSI colour
+     *                    codes.
+     * @return Returns the formatted string.
+     * @see #formatHexBytes(byte[], boolean, boolean, boolean)
      */
     public static String formatHexBytes(byte[] data, boolean showColours) {
         return formatHexBytes(data, showColours, true);
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Present an array of bytes in a hexadecimal view, similar to the output
+     * of the hexdump command on Unix systems. The formatted data will be
+     * returned as a string.
+     *
+     * @param data               The array of bytes to format.
+     * @param showColours        Whether or not the output should include ANSI colour
+     *                           codes.
+     * @param condenseDuplicates Whether or not duplicate lines in the output
+     *                           should be condensed with an asterisk.
+     * @return Returns the formatted string.
+     * @see #formatHexBytes(byte[], boolean, boolean, boolean)
      */
     public static String formatHexBytes(byte[] data, boolean showColours, boolean condenseDuplicates) {
         return formatHexBytes(data, showColours, condenseDuplicates, true);
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Present an array of bytes in a hexadecimal view, similar to the output
+     * of the hexdump command on Unix systems. The formatted data will be
+     * returned as a string.
+     *
+     * @param data               The array of bytes to format.
+     * @param showColours        Whether or not the output should include ANSI colour
+     *                           codes.
+     * @param condenseDuplicates Whether or not duplicate lines in the output
+     *                           should be condensed with an asterisk.
+     * @param showAddress        Whether or not to include the address line
+     *                           numbers in the output.
+     * @return Returns the formatted string.
+     * @see #formatHexBytes(byte[], boolean, boolean, boolean)
      */
     public static String formatHexBytes(byte[] data, boolean showColours, boolean condenseDuplicates, boolean showAddress) {
         StringBuilder builder = new StringBuilder();
@@ -181,14 +215,41 @@ public class ByteUtils {
         return builder.toString();
     }
 
+    /**
+     * Present an array of bytes in a hexadecimal view, similar to the output
+     * of the hexdump command on Unix systems. The formatted data will be
+     * written to the console.
+     *
+     * @param data The array of bytes to format.
+     */
     public static void dumpHexBytes(byte[] data) {
         dumpHexBytes(data, true);
     }
 
+    /**
+     * Present an array of bytes in a hexadecimal view, similar to the output
+     * of the hexdump command on Unix systems. The formatted data will be
+     * written to the console.
+     *
+     * @param data        The array of bytes to format.
+     * @param showColours Whether or not the output should include ANSI colour
+     *                    codes.
+     */
     public static void dumpHexBytes(byte[] data, boolean showColours) {
         dumpHexBytes(data, showColours, true);
     }
 
+    /**
+     * Present an array of bytes in a hexadecimal view, similar to the output
+     * of the hexdump command on Unix systems. The formatted data will be
+     * written to the console.
+     *
+     * @param data               The array of bytes to format.
+     * @param showColours        Whether or not the output should include ANSI colour
+     *                           codes.
+     * @param condenseDuplicates Whether or not duplicate lines in the output
+     *                           should be condensed with an asterisk.
+     */
     public static void dumpHexBytes(byte[] data, boolean showColours, boolean condenseDuplicates) {
         dumpHexBytes(data, showColours, condenseDuplicates, true);
     }
@@ -198,12 +259,13 @@ public class ByteUtils {
      * of the hexdump command on Unix systems. The formatted data will be
      * written to the console.
      *
-     * @param data               the byte array to format
-     * @param showAddress        whether or not to show the address line numbers in
-     *                           the output
-     * @param condenseDuplicates whether or not to condense duplicate lines
-     *                           replacing them with an asterisk character
-     * @param showColours        whether or not to format the output with colours
+     * @param data               The array of bytes to format.
+     * @param showColours        Whether or not the output should include ANSI colour
+     *                           codes.
+     * @param condenseDuplicates Whether or not duplicate lines in the output
+     *                           should be condensed with an asterisk.
+     * @param showAddress        Whether or not to include the address line
+     *                           numbers in the output.
      */
     public static void dumpHexBytes(byte[] data, boolean showColours, boolean condenseDuplicates, boolean showAddress) {
         String formattedBytes = formatHexBytes(data, showColours, condenseDuplicates, showAddress);
@@ -211,7 +273,8 @@ public class ByteUtils {
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns the appropriate ANSI colour for outputting this byte to
+     * the console.
      */
     private static String getByteColour(byte b) {
         if (b == 0)
@@ -225,21 +288,26 @@ public class ByteUtils {
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns whether or not this byte is within the ASCII printable
+     * characters range.
      */
     private static boolean isAsciiPrintable(byte b) {
         return b >= 0x20 && b <= 0x7e;
     }
 
     /**
-     * TODO(docs): write javadoc
+     * @return Returns whether or not this byte is an ASCII whitespace
+     * character (a space).
      */
     private static boolean isAsciiWhitespace(byte b) {
         return b == 0x20;
     }
 
     /**
-     * TODO(docs): write javadoc
+     * Wrap the given byte array in a ByteBuffer object with the byte order
+     * set to the LITTLE_ENDIAN format.
+     *
+     * @return Returns the new ByteBuffer object.
      */
     public static ByteBuffer wrap(byte[] array) {
         ByteBuffer buffer = ByteBuffer.wrap(array);
