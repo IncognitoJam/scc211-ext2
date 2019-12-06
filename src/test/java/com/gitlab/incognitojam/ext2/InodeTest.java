@@ -31,7 +31,7 @@ public class InodeTest {
     }
 
     @Test
-    public void testRootInode() {
+    public void testRootInodeAttributes() {
         Inode root = volume.getInode(2);
 
         assertNotNull(root);
@@ -44,8 +44,13 @@ public class InodeTest {
         assertEquals("group id", 0, root.getGroupId());
         assertEquals("hard links count", 6, root.getHardLinksCount());
         assertEquals("file size", 1024, root.getFileSize());
+    }
 
+    @Test
+    public void testRootDirectoryEntries() {
+        Inode root = volume.getInode(2);
         List<DirectoryEntry> entries = root.getEntries();
+
         assertNotNull(entries);
         assertEquals("entries length", 7, entries.size());
 
