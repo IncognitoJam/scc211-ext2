@@ -117,8 +117,6 @@ public class Volume implements Closeable {
          * directory label in the tree. We follow the tree to find the Inode
          * at the file path.
          */
-        if (filePath.startsWith(Ext2File.pathSeparator))
-            filePath = filePath.substring(1);
         final String[] parts = filePath.split(Ext2File.pathSeparator);
 
         Inode inode = getInode(2);
@@ -137,6 +135,14 @@ public class Volume implements Closeable {
         List<DirectoryEntry> entries = inode.getEntries();
         for (int i = 0; i < parts.length; i++) {
             final String part = parts[i];
+
+            /*
+             * If this "part" of the file path is empty, for example if there
+             * were two forward-slashes immediately following one another,
+             * skip this part.
+             */
+            if (part.length() == 0)
+                continue;
 
             /*
              * Iterate over the directory entries looking for the entry with
