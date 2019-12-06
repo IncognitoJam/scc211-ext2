@@ -8,6 +8,7 @@ import com.gitlab.incognitojam.ext2.Inode.FileModes;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Date;
 
 class FileViewer extends JFrame {
@@ -42,17 +43,20 @@ class FileViewer extends JFrame {
         // create the text area contents
         TextArea textArea = new TextArea();
         file.seek(0L);
+        final long start = System.currentTimeMillis();
         while (file.getPosition() < file.getSize()) {
-            byte[] data = file.read(Math.min(8192L, file.getSize() - file.getPosition()));
+            byte[] data = file.read(Math.min(1024L, file.getSize() - file.getPosition()));
             boolean empty = true;
-            for (byte d : data)
-                if (d > 0) {
+            for (byte b : data) {
+                if (b > 0) {
                     empty = false;
                     break;
                 }
-
+            }
             if (!empty) textArea.append(new String(data));
         }
+        final long end = System.currentTimeMillis();
+        System.out.printf("Duration: %2.2f seconds\n", (end - start) / 1000.0);
         textArea.setEditable(false);
         pane.add(textArea, BorderLayout.CENTER);
 
