@@ -2,10 +2,12 @@ package com.gitlab.incognitojam.ext2;
 
 import com.gitlab.incognitojam.ext2.Inode.FileModes;
 
-import java.io.FileNotFoundException;
+import java.io.*;
+import java.net.URLConnection;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Ext2File represents a file within the Ext2 filesystem and holds a reference
@@ -176,6 +178,28 @@ public class Ext2File {
      */
     public byte[] read(long length) {
         return read(position, length);
+    }
+
+    /**
+     * Determine the mime type of this file's contents.
+     *
+     * @return Returns the mime type string for this file, or null if it is not
+     * known.
+     */
+    public Optional<String> getMimeType() {
+        if (!isRegularFile())
+            return Optional.empty();
+
+        byte[] header = read(0L, Math.min(getSize(), 20L));
+        String mimeType = null;
+        try {
+            InputStream inputStream = new BufferedInputStream(new ByteArrayInputStream(header));
+            mimeType = URLConnection.guessContentTypeFromStream(inputStream);
+        } catch (IOException e) {
+            System.err.println("Failed to determine mime type of file");
+        }
+
+        return Optional.ofNullable(mimeType);
     }
 
     /**
