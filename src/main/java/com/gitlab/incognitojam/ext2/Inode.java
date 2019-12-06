@@ -216,9 +216,9 @@ public class Inode {
         this.volume = volume;
         ByteBuffer buffer = ByteUtils.wrap(bytes);
 
-        fileMode = buffer.getShort();
-        userId = buffer.getShort();
-        final int fileSizeLower = buffer.getInt();
+        fileMode = buffer.getShort(0);
+        userId = buffer.getShort(2);
+        final int fileSizeLower = buffer.getInt(4);
         lastAccessTime = buffer.getInt(8);
         creationTime = buffer.getInt(12);
         lastModifiedTime = buffer.getInt(16);
