@@ -30,3 +30,9 @@ sourceSets {
         }
     }
 }
+
+task execute(type: JavaExec) {
+    String pkg = 'com.gitlab.incognitojam'
+    main = project.hasProperty('app') && getProperty('app').equals('explorer') ? pkg + '.explorer.Ext2Explorer' : pkg + '.demo.Demo'
+    classpath = sourceSets.main.runtimeClasspath
+}

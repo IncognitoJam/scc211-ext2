@@ -2,10 +2,15 @@
 ## `java-ext2` coursework
 
 # Getting started
-```sh
+```shell script
 # Unzip the filesystem
 unzip ext2fs.zip
 
 # Run the application
-./gradlew run
+./gradlew execute
+```
+
+Alternatively, run the Ext2Explorer using the following command:
+```shell script
+./gradlew -Papp=explorer execute
 ```
