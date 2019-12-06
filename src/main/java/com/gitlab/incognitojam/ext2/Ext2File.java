@@ -28,7 +28,7 @@ public class Ext2File {
      */
     public Ext2File(Volume volume, String filePath) throws FileNotFoundException {
         this.volume = volume;
-        this.filePath = filePath;
+        this.filePath = Path.of(filePath).normalize().toString();
         this.inode = volume.navigate(filePath);
         if (inode == null)
             throw new FileNotFoundException("Could not find file " + filePath);
@@ -112,6 +112,19 @@ public class Ext2File {
         if (fileName == null)
             return "/";
         return fileName.toString();
+    }
+
+    /**
+     * @return Returns a reference to the parent directory as an Ext2File.
+     */
+    public Ext2File getParentDirectory() {
+        try {
+            return new Ext2File(this, "..");
+        } catch (FileNotFoundException e) {
+            System.err.println("An error occurred when attempting to find the parent directory");
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
