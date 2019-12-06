@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.gitlab.incognitojam.ext2.Inode.FileModes.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class InodeTest {
     private static final String volumeFilename = "ext2fs";
